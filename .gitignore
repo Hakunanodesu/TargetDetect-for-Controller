@@ -1,0 +1,7 @@
+datasets/*
+runs/*
+.vscode
+
+**/__pycache__/
+
+*.pt
