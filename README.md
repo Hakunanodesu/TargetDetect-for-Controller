@@ -43,7 +43,7 @@ controller/
 
 ### 模型训练
 
-1. 准备数据集并配置 `datasets/apex.yaml`。
+1. 准备数据集并配置，例：`datasets/apex.yaml`。
 2. 运行 `train.py` 进行模型训练：
    ```
    python train.py
@@ -51,7 +51,7 @@ controller/
 
 ### 模型推理
 
-1. 确保 `runs/detect/epoch100/weights/` 目录下有训练好的模型权重。
+1. 确保模型权重路径正确。
 2. 运行 `run.py` 进行实时目标检测：
    ```
    python run.py
@@ -73,6 +73,8 @@ controller/
 
 ## 注意事项
 
+- 目前的版本仅支持 DualSense 手柄，请运行 `get_controller.py` 并根据提示确认手柄的 Vendor ID (VID) 和 Product ID (PID)。
 - 请确保在使用前已正确连接 DualSense 手柄。
 - 在使用 GPU 加速时，请确保 CUDA 环境配置正确。
 - 本项目中的所有脚本和模块均需在 Python 环境下运行。
+- 请根据实际修改 `run.py` 中的手柄信息和模型权重路径等。

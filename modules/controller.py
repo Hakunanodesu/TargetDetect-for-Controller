@@ -16,7 +16,7 @@ class DualSenseToX360Mapper:
 
     # DualSense 的供应商 ID 和产品 ID（USB）
     DEFAULT_VENDOR_ID = 0x054C  # Sony
-    DEFAULT_PRODUCT_ID = 0x0DF2  # DualSense USB 接入时的 PID
+    DEFAULT_PRODUCT_ID = 0x0DF2  # DualSense Edge USB 接入时的 PID
 
     def __init__(self,
                  vendor_id: int = None,
@@ -26,7 +26,7 @@ class DualSenseToX360Mapper:
         初始化 DualSenseToX360Mapper。
 
         :param vendor_id: DualSense 供应商 ID，默认使用 Sony（0x054C）
-        :param product_id: DualSense 产品 ID，默认使用 DualSense（0x0DF2）
+        :param product_id: DualSense 产品 ID，默认使用 DualSense Edge（0x0DF2）
         :param poll_interval: 映射循环的轮询间隔（秒），默认 0.01s
         """
         self.vendor_id = vendor_id if vendor_id is not None else self.DEFAULT_VENDOR_ID

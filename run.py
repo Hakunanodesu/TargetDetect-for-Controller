@@ -20,7 +20,7 @@ if __name__ == "__main__":
         print(f"正在检查是否支持CUDA...{torch.cuda.is_available()}")
         print("你可以在任何时候通过Ctrl+C退出程序")
 
-        mapper = DualSenseToX360Mapper()
+        mapper = DualSenseToX360Mapper(vendor_id=0x054C, product_id=0x0DF2, poll_interval=0.002)
         mapper.start()
 
         while True:
