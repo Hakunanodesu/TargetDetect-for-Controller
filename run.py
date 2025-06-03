@@ -3,11 +3,13 @@ import torch
 import json
 import time
 import sys
+import mss
+import numpy as np
 
 from models.yolo import YOLO11
 from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
-from utils.tools import get_screenshot_region, get_cpu_gpu_usage
+from utils.tools import get_screenshot_region, get_screenshot_region_dxcam, get_cpu_gpu_usage
 
 if __name__ == "__main__":
     """
@@ -24,7 +26,7 @@ if __name__ == "__main__":
 
         while True:
             print("\n3s后重新载入配置文件并启动...")
-            time.sleep(3)
+            time.sleep(1)
 
             try:
                 with open("config.json", "r") as f:
@@ -36,76 +38,85 @@ if __name__ == "__main__":
                 img_center = screenshot_size / 2
                 snap_center = snap_size / 2
                 
-                # 加载后台截图
-                camera = ScreenGrabber(region=get_screenshot_region(screenshot_size), fps=120)
-                frame_queue = camera.start_grab_frame_thread()
+                # 加载截图
+                camera = ScreenGrabber(region=get_screenshot_region_dxcam(screenshot_size))
+                region = get_screenshot_region(screenshot_size)
 
                 # 加载推理模型
                 model = YOLO11("./runs/detect/epoch100_/weights/best.engine")
-                model.model.predict("./datasets/bus.jpg")
-                result_queue = model.start_inference_thread(frame_queue)
+                model.inference("./datasets/bus.jpg")
 
                 last_print_time = time.time()
-                print("\n\n")
-                while True:
-                    cycle_start = time.perf_counter()
-                    
-                    grab_infer_start = time.perf_counter()
-                    result = result_queue.get()
-                    grab_infer_end = time.perf_counter()
-                    grab_infer_latency = (grab_infer_end - grab_infer_start) * 1000
-
-                    xy_result = result.boxes.xywh[:, :2] - img_center
-                    if (
-                        xy_result.size(0) != 0 # and \
-                        # (mapper.dual_sense_state["rt"] > 127 or mapper.dual_sense_state["lt"] > 127)
-                    ):
-                        #中心距离排序
-                        distances = torch.abs(xy_result[:, 0]) + \
-                            torch.abs(xy_result[:, 1])
-                        min_idx = distances.argmin()
-                        s_strength = snap_strength
-                        t_strength = track_strength
-                        if mapper.dual_sense_state["lt"] < 127:
-                            s_strength /= 2
-                            t_strength /= 2
-                        if (torch.abs(xy_result[min_idx]) < snap_center).all():
-                            rx_offset = xy_result[min_idx][0] * (255 / snap_size) * s_strength
-                            ry_offset = xy_result[min_idx][1] * (255 / snap_size) * s_strength
-                        else:
-                            rx_offset = xy_result[min_idx][0] * (255 / screenshot_size) * t_strength
-                            ry_offset = xy_result[min_idx][1] * (255 / screenshot_size) * t_strength
-                        mapper.add_rx_ry_offset(
-                            rx_offset,
-                            ry_offset
-                        )
-                        # print("origin", xy_result[min_idx])
-                        # print("offset", rx_offset, ry_offset)
-                    else:
-                        mapper.rx_override = None
-                        mapper.ry_override = None
-
-                    # # 预览窗口（调试用，正常使用时请注释掉）
-                    # annotated_frame = result.plot()
-                    # cv2.imshow(f"{model.model_name} Detection", annotated_frame)
-                    # # 加上这一行，避免窗口卡死。1 毫秒内没有按键则返回 -1
-                    # if cv2.waitKey(1) & 0xFF == ord('q'):
-                    #     # 按 q 键可退出循环
-                    #     raise KeyboardInterrupt
+                with mss.mss() as sct:
+                    print("\n\n\n")
+                    while True:
+                        cycle_start = time.perf_counter()
                         
-                    cycle_end = time.perf_counter()
-                    cycle_latency = (cycle_end - cycle_start) * 1000
+                        grab_start = time.perf_counter()
+                        img = camera.grab_frame()
+                        if img is None:
+                            continue
+                        grab_end = time.perf_counter()
+                        grab_latency = (grab_end - grab_start) * 1000
 
-                    cpu_usg, gpu_usg = get_cpu_gpu_usage()
+                        infer_start = time.perf_counter()
+                        result = model.inference(img)
+                        infer_end = time.perf_counter()
+                        infer_latency = (infer_end - infer_start) * 1000
 
-                    now = time.time()
-                    if now - last_print_time > 1:
-                        # \r 回到行首，end='' 避免换行，flush=True 保证立即输出
-                        sys.stdout.write("\033[2A")
-                        sys.stdout.write(f"\r\033[K[Latency] cycle耗时：{cycle_latency:.3f} ms\n")
-                        sys.stdout.write(f"\r\033[K[Usage] CPU: {cpu_usg:.2f}% GPU: {gpu_usg:.2f}%\n")
-                        sys.stdout.flush()
-                        last_print_time = now
+                        xy_result = result.boxes.xywh[:, :2] - img_center
+                        if (
+                            xy_result.size(0) != 0 and \
+                            (mapper.dual_sense_state["rt"] > 127 or mapper.dual_sense_state["lt"] > 127)
+                        ):
+                            #中心距离排序
+                            distances = torch.abs(xy_result[:, 0]) + \
+                                torch.abs(xy_result[:, 1])
+                            min_idx = distances.argmin()
+                            s_strength = snap_strength
+                            t_strength = track_strength
+                            if mapper.dual_sense_state["lt"] < 127:
+                                s_strength /= 2
+                                t_strength /= 2
+                            if (torch.abs(xy_result[min_idx]) < snap_center).all():
+                                rx_offset = xy_result[min_idx][0] * (255 / snap_size) * s_strength
+                                ry_offset = xy_result[min_idx][1] * (255 / snap_size) * s_strength
+                            else:
+                                rx_offset = xy_result[min_idx][0] * (255 / screenshot_size) * t_strength
+                                ry_offset = xy_result[min_idx][1] * (255 / screenshot_size) * t_strength
+                            mapper.add_rx_ry_offset(
+                                rx_offset,
+                                ry_offset
+                            )
+                            # print("origin", xy_result[min_idx])
+                            # print("offset", rx_offset, ry_offset)
+                        else:
+                            mapper.rx_override = None
+                            mapper.ry_override = None
+
+                        # # 预览窗口（调试用，正常使用时请注释掉）
+                        # annotated_frame = result.plot()
+                        # cv2.imshow(f"{model.model_name} Detection", annotated_frame)
+                        # # 加上这一行，避免窗口卡死。1 毫秒内没有按键则返回 -1
+                        # if cv2.waitKey(1) & 0xFF == ord('q'):
+                        #     # 按 q 键可退出循环
+                        #     raise KeyboardInterrupt
+                            
+                        cycle_end = time.perf_counter()
+                        cycle_latency = (cycle_end - cycle_start) * 1000
+
+                        # cpu_usg, gpu_usg = get_cpu_gpu_usage()
+
+                        now = time.time()
+                        if now - last_print_time > 1:
+                            # \r 回到行首，end='' 避免换行，flush=True 保证立即输出
+                            sys.stdout.write("\033[3A")
+                            sys.stdout.write(f"\r\033[K[Latency] cycle耗时：{cycle_latency:.3f} ms\n")
+                            sys.stdout.write(f"\r\033[K[Latency] grab耗时：{grab_latency:.3f} ms\n")
+                            sys.stdout.write(f"\r\033[K[Latency] infer耗时：{infer_latency:.3f} ms\n")
+                            # sys.stdout.write(f"\r\033[K[Usage] CPU: {cpu_usg:.2f}% GPU: {gpu_usg:.2f}%\n")
+                            sys.stdout.flush()
+                            last_print_time = now
             except KeyboardInterrupt:
                 pass
             except Exception as e:
@@ -114,8 +125,6 @@ if __name__ == "__main__":
                 logging.error("发生异常：%s", str(e))
                 logging.error("异常类型：%s", type(e).__name__)
                 logging.error("完整堆栈信息：\n%s", traceback.format_exc())
-            finally:
-                camera.stop()
     except KeyboardInterrupt:
         pass
     finally:

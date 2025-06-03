@@ -7,7 +7,7 @@
     "seed": 42,
     "screenshot_size": 640,
     "track_settings": {
-        "track_strength": 1.5,
+        "track_strength": 1,
         "snap_size": 200,
         "snap_strength": 1
     },

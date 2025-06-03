@@ -1,19 +1,11 @@
-import threading
-import queue
-import time
-from modules.grab_screen import ScreenGrabber
-from utils.tools import get_screenshot_region
+import dxcam
 
-screenshot_size = (1920, 1080)  # 屏幕分辨率
+# 创建一个 DXCamera 实例
+camera = dxcam.create()
 
-frame_queue = queue.Queue(maxsize=5)  # 控制内存占用，避免过多帧堆积
+# 进行屏幕截图
+frame = camera.grab()
 
-camera = ScreenGrabber(region=get_screenshot_region(screenshot_size))
-
-def grab_screen_thread(camera):
-    while True:
-        frame = camera.get_latest_frame()
-        if frame is not None:
-            if not frame_queue.full():
-                frame_queue.put(frame)
-        time.sleep(0.001)  # 可调节以平衡 CPU
+# 显示截图
+from PIL import Image
+Image.fromarray(frame).show()
