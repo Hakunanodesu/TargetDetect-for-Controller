@@ -55,7 +55,8 @@ controller/
 2. 运行 `get_controller.py` 获取手柄的 Vendor ID (VID) 和 Product ID (PID)。
 3. 在 `config.json` 中配置手柄信息。
 4. 在 `config.json` 中配置模型权重路径。
-5. 运行 `run.py` 启动手柄控制映射。
+5. 在 `config.json` 中配置运行设备，如 `cpu` 或 `cuda:0`。
+6. 运行 `run.py` 启动手柄控制映射。
 
 ## 功能描述
 
