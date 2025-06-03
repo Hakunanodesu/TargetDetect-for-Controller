@@ -1,7 +1,6 @@
 datasets/*
 !datasets/bus.jpg
 runs/detect/*
-!runs/detect/epoch100_/
 .vscode
 
 **/__pycache__/
