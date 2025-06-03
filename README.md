@@ -2,7 +2,7 @@
 
 ## 简介
 
-本项目是一个基于深度学习的目标检测系统，使用了 YOLO11 模型进行实时目标检测，并通过 DualSense 手柄进行交互控制。项目包含模型训练、推理以及手柄控制映射等功能。
+本项目是一个基于深度学习的目标检测系统，使用了 YOLO11 模型进行实时目标检测，并通过 DualSense 手柄进行交互控制。项目包含模型训练、推理以及手柄控制映射等功能。当前仅支持Windows操作系统。
 
 ## 文件结构
 
@@ -34,12 +34,12 @@ controller/
 
 ### 环境配置
 
-1. 安装 Python (3.11) 及其依赖库：
+1. 确保 CUDA 环境可用（如果使用 NVIDIA GPU 加速），请在 `https://developer.nvidia.com/cuda-downloads` 下载您的 GPU 所对应的 CUDA 版本。
+
+2. 安装 Python（3.11）及其依赖库（请确保安装的 PyTorch 版本跟您的 CUDA 版本能对应）：
    ```
    pip install -r requirements.txt
    ```
-
-2. 确保 CUDA 环境可用（如果使用 GPU 加速）。
 
 ### 模型训练
 
@@ -49,18 +49,13 @@ controller/
    python train.py
    ```
 
-### 模型推理
-
-1. 确保模型权重路径正确。
-2. 运行 `run.py` 进行实时目标检测：
-   ```
-   python run.py
-   ```
-
-### 手柄控制映射
+### 手柄控制映射 + 屏幕目标检测
 
 1. 连接 DualSense 手柄。
-2. 运行 `run.py` 启动手柄控制映射。
+2. 运行 `get_controller.py` 获取手柄的 Vendor ID (VID) 和 Product ID (PID)。
+3. 在 `config.json` 中配置手柄信息。
+4. 在 `config.json` 中配置模型权重路径。
+5. 运行 `run.py` 启动手柄控制映射。
 
 ## 功能描述
 
@@ -73,7 +68,7 @@ controller/
 
 ## 注意事项
 
-- 目前的版本仅支持 DualSense 手柄，请运行 `get_controller.py` 并根据提示确认手柄的 Vendor ID (VID) 和 Product ID (PID)。
+- 目前的版本仅支持 DualSense 手柄
 - 请确保在使用前已正确连接 DualSense 手柄。
 - 在使用 GPU 加速时，请确保 CUDA 环境配置正确。
 - 本项目中的所有脚本和模块均需在 Python 环境下运行。

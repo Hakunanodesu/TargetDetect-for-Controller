@@ -17,5 +17,10 @@
         "batch": 64,
         "cache": "disk",
         "workers": 2
+    },
+    "model_path": "./runs/detect/epoch100_/weights/best.engine",
+    "controller":{
+        "Vendor_ID": "0x054C",
+        "Product_ID": "0x0DF2"
     }
 }

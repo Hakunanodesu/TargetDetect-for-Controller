@@ -21,7 +21,12 @@ if __name__ == "__main__":
         print(f"正在检查是否支持CUDA...{torch.cuda.is_available()}")
         print("你可以在任何时候通过Ctrl+C退出程序")
 
-        mapper = DualSenseToX360Mapper(vendor_id=0x054C, product_id=0x0DF2, poll_interval=0.002)
+        with open("config.json", "r") as f:
+            config = json.load(f)
+        vendor_id = int(config["controller"]["Vendor_ID"], 16)
+        product_id = int(config["controller"]["Product_ID"], 16)
+
+        mapper = DualSenseToX360Mapper(vendor_id=vendor_id, product_id=product_id, poll_interval=0.002)
         mapper.start()
 
         while True:
@@ -37,13 +42,14 @@ if __name__ == "__main__":
                 snap_strength = config["track_settings"]["snap_strength"]
                 img_center = screenshot_size / 2
                 snap_center = snap_size / 2
+                model_path = config["model_path"]
                 
                 # 加载截图
                 camera = ScreenGrabber(region=get_screenshot_region_dxcam(screenshot_size))
                 region = get_screenshot_region(screenshot_size)
 
                 # 加载推理模型
-                model = YOLO11("./runs/detect/epoch100_/weights/best.engine")
+                model = YOLO11(model_path)
                 model.inference("./datasets/bus.jpg")
 
                 last_print_time = time.time()
