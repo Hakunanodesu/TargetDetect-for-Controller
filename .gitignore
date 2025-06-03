@@ -1,6 +1,7 @@
 datasets/*
 !datasets/bus.jpg
 runs/detect/*
+!runs/detect/best.pt
 .vscode
 
 **/__pycache__/
