@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
         while True:
             print("\n3s后重新载入配置文件并启动...")
-            time.sleep(1)
+            time.sleep(3)
 
             try:
                 with open("config.json", "r") as f:

@@ -9,7 +9,7 @@
     "track_settings": {
         "track_strength": 1,
         "snap_size": 200,
-        "snap_strength": 1
+        "snap_strength": 2
     },
     "train_settings": {
         "epochs": 1000,
