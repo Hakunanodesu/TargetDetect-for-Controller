@@ -1,6 +1,8 @@
 from ultralytics import YOLO
 import os
 import json
+import threading
+import queue
 
 
 class YOLO11():
@@ -24,20 +26,41 @@ class YOLO11():
         self.device = config["device"]
         self.seed = config["seed"]
 
-    def inference(self, 
-                  source):
-        """
-        source的输入形式请查看README.md
-        """
-        results = self.model.predict(
-            source, 
-            conf=self.infer_conf, 
-            imgsz=self.screenshot_size,
-            device=self.device,
-            classes=self.infer_classes,
-            verbose=False
+        self.stop_event = threading.Event()
+        self.thread = None
+
+    def inference(self, frame_queue, result_queue):
+        while not self.stop_event.is_set():
+            frame = frame_queue.get()
+            results = self.model.predict(
+                frame, 
+                conf=self.infer_conf, 
+                imgsz=self.screenshot_size,
+                device=self.device,
+                classes=self.infer_classes,
+                verbose=False
+            )
+            if not result_queue.full():
+                result_queue.put(results[0])
+
+    def start_inference_thread(self, frame_queue):
+        result_queue = queue.Queue(maxsize=1)
+        self.stop_event.clear()
+        self.thread = threading.Thread(
+            target=self.inference, 
+            args=(frame_queue, result_queue), 
+            daemon=True
         )
-        return results
+        self.thread.start()
+        return result_queue
+    
+    def stop_inference_thread(self):
+        # 通知 grab_frame 里的循环退出
+        self.stop_event.set()
+        # 等待线程结束（如果线程还没启动过，就不阻塞）
+        if self.thread is not None:
+            self.thread.join()
+            self.thread = None
     
     def train(self, data: str, name: str = None):
         self.model.train(

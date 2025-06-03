@@ -1,36 +1,19 @@
-import mss
-import cv2
-import numpy as np
+import threading
+import queue
+import time
+from modules.grab_screen import ScreenGrabber
+from utils.tools import get_screenshot_region
 
-def get_screenshot_region(screenshot_size):
-    with mss.mss() as sct:
-        monitor = sct.monitors[1]
-        screen_width = monitor["width"]
-        screen_height = monitor["height"]
+screenshot_size = (1920, 1080)  # 屏幕分辨率
 
-        region_width = screenshot_size
-        region_height = screenshot_size
+frame_queue = queue.Queue(maxsize=5)  # 控制内存占用，避免过多帧堆积
 
-        region_left = (screen_width  - region_width ) // 2
-        region_top  = (screen_height - region_height) // 2
+camera = ScreenGrabber(region=get_screenshot_region(screenshot_size))
 
-        region = {
-            "left":   region_left,
-            "top":    region_top,
-            "width":  region_width,
-            "height": region_height
-        }
-    return region
-
-region = get_screenshot_region(640)
-with mss.mss() as sct:
+def grab_screen_thread(camera):
     while True:
-        img = np.array(sct.grab(region))[:, :, :3]
-
-        # 预览窗口（调试用，正常使用时请注释掉）
-        annotated_frame = img
-        cv2.imshow(f"Detection", annotated_frame)
-        # 加上这一行，避免窗口卡死。1 毫秒内没有按键则返回 -1
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            # 按 q 键可退出循环
-            raise KeyboardInterrupt
+        frame = camera.get_latest_frame()
+        if frame is not None:
+            if not frame_queue.full():
+                frame_queue.put(frame)
+        time.sleep(0.001)  # 可调节以平衡 CPU
