@@ -1,11 +1,17 @@
+dxcam==0.0.5
+gputil==1.4.0
 mss==10.0.0
 numpy==2.2.6
 opencv_python==4.11.0.86
-opencv_python==4.10.0.84
+# opencv_python==4.10.0.84
+Pillow==11.2.1
+# psutil==6.1.0
+# psutil==6.0.0
+psutil==7.0.0
 pywinusb==0.4.2
 torch==2.7.0+cu128
-torch==2.6.0+cu118
-torch==2.5.1+cu121
-torch==2.7.0
+# torch==2.6.0+cu118
+# torch==2.5.1+cu121
+# torch==2.7.0
 ultralytics==8.3.146
 vgamepad==0.1.0
