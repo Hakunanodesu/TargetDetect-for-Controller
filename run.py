@@ -56,6 +56,8 @@ if __name__ == "__main__":
                         img = camera.grab_frame()
                         if img is None:
                             continue
+                        # img = np.array(sct.grab(region))[:, :, :3]
+                        # time.sleep(0.001)
                         grab_end = time.perf_counter()
                         grab_latency = (grab_end - grab_start) * 1000
 
