@@ -41,7 +41,7 @@ if __name__ == "__main__":
                 frame_queue = camera.start_grab_frame_thread()
 
                 # 加载推理模型
-                model = YOLO11("./runs/detect/epoch100/weights/best.engine")
+                model = YOLO11("./runs/detect/epoch100_/weights/best.engine")
                 model.model.predict("./datasets/bus.jpg")
                 result_queue = model.start_inference_thread(frame_queue)
 
