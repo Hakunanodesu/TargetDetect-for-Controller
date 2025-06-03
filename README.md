@@ -34,7 +34,7 @@ controller/
 
 ### 环境配置
 
-1. 安装 Python 及其依赖库：
+1. 安装 Python (3.11) 及其依赖库：
    ```
    pip install -r requirements.txt
    ```
