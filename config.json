@@ -3,7 +3,7 @@
         "conf": 0.5,
         "classes": [0]
     },
-    "device": 0,
+    "device": null,
     "seed": 42,
     "screenshot_size": 640,
     "track_settings": {
