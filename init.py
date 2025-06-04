@@ -28,7 +28,7 @@ def main():
                     curr_devices = enum_hid_devices()
 
                     # 找出设备变化
-                    device = (curr_devices - prev_devices) | (prev_devices - curr_devices) | {(1,2,3)}
+                    device = (curr_devices - prev_devices) | (prev_devices - curr_devices) # | {(1,2,3)}
 
                     if len(device) == 1:
                         for (vid, pid, path) in device:
