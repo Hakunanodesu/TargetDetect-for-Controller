@@ -1,4 +1,5 @@
 {
+    "first_run": false,
     "device": null,
     "screenshot_settings": {
         "size": 640,

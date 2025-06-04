@@ -5,13 +5,13 @@ import json
 
 class YOLO11():
 
-    def __init__(self, model_path: str = "./runs/detect/yolo11n.pt"):
+    def __init__(self, model_path: str = "./yolo11n.pt"):
         self.model_name = os.path.basename(model_path)
         print("\n正在载入推理模型...")
         self.model = YOLO(model_path, task='detect')
         print(f"推理模型载入完成，当前模型：{self.model_name}\n")
 
-        with open("./models/cfg_yolo.json", "r") as f:
+        with open("./configs/cfg_yolo.json", "r") as f:
             config = json.load(f)
         self.infer_conf = config["inference_settings"]["conf"]
         self.infer_classes = config["inference_settings"]["classes"]
@@ -21,7 +21,7 @@ class YOLO11():
         self.train_cache = config["train_settings"]["cache"]
         self.train_workers = config["train_settings"]["workers"]
         self.seed = config["seed"]
-        with open("./cfg_global.json") as f:
+        with open("./configs/cfg_global.json") as f:
             config = json.load(f)
         self.screenshot_size = config["screenshot_settings"]["size"]
         self.device = config["device"]

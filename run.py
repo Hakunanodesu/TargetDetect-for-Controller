@@ -7,6 +7,7 @@ import mss
 import numpy as np
 import logging
 import traceback
+import os
 
 from models.yolo import YOLO11
 from modules.controller import DualSenseToX360Mapper
@@ -21,10 +22,16 @@ if __name__ == "__main__":
     """
     try:
         # 检查GPU是否可用
-        print(f"正在检查是否支持CUDA...{torch.cuda.is_available()}")
+        torch.cuda.is_available()
         print("你可以在任何时候通过Ctrl+C退出程序")
 
-        with open("./cfg_global.json", "r") as f:
+        with open("./configs/cfg_global.json", "r") as f:
+            config = json.load(f)
+        first_run = config["first_run"]
+        if first_run:
+            response = os.system("python init.py")
+
+        with open("./configs/cfg_global.json", "r") as f:
             config = json.load(f)
         vendor_id = int(config["controller"]["Vendor_ID"], 16)
         product_id = int(config["controller"]["Product_ID"], 16)
@@ -37,7 +44,7 @@ if __name__ == "__main__":
             time.sleep(3)
 
             try:
-                with open("./cfg_global.json", "r") as f:
+                with open("./configs/cfg_global.json", "r") as f:
                     config = json.load(f)
                 track_strength = config["track_settings"]["track_strength"]
                 snap_strength = config["track_settings"]["snap_strength"]
@@ -139,6 +146,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     finally:
-        mapper.stop()
-        cv2.destroyAllWindows()
+        try:
+            mapper.stop()
+            cv2.destroyAllWindows()
+        except:
+            pass
         print("已退出")

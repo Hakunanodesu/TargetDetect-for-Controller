@@ -11,7 +11,7 @@ def main():
         print(">>> 请根据提示操作以完成初始配置，您可以在任何时候按 Ctrl+C 退出。（回车以继续）")
         input()
 
-        with open("./cfg_global.json", "r") as f:
+        with open("./configs/cfg_global.json", "r") as f:
             config = json.load(f)
 
         while True:
@@ -123,7 +123,8 @@ def main():
             else:
                 print(">>> 输入无效，请重新输入。")
         
-        with open("./cfg_global.json", "w") as f:
+        config["first_run"] = False
+        with open("./configs/cfg_global.json", "w") as f:
             json.dump(config, f, indent=4)
         print(">>> 初始配置完成。")
     except KeyboardInterrupt:
