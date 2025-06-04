@@ -9,7 +9,7 @@
 以下是项目当前需要完成的任务：
 
 - [ ] 添加HidHide功能
-- [ ] 重写get_controller.py，使其能初始化更多参数，更加的用户友好
+- [x] 重写get_controller.py，使其能初始化更多参数，更加的用户友好（重写为init.py）
 
 ## 文件结构
 
