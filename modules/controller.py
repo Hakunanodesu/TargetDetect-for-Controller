@@ -98,7 +98,7 @@ class DualSenseToX360Mapper:
 
         # 只打开第一个匹配的 DualSense 设备
         self._hid_device = all_devices[0]
-        self._hid_device.open(exclusive=True)
+        self._hid_device.open()
         # 注册回调，将收到的新数据传给 _input_handler 方法
         self._hid_device.set_raw_data_handler(lambda data: self._input_handler(data))
         print(f"\n已连接并注册 DualSense (VID:0x{self.vendor_id:04X}, PID:0x{self.product_id:04X})")
