@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
                 last_print_time = time.time()
                 with mss.mss() as sct:
-                    print("\n\n")
+                    print("\n\n\n")
                     while True:
                         cycle_start = time.perf_counter()
                         

@@ -1,6 +1,7 @@
 {
     "inference_settings": {
-        "conf": 0.5,
+        "conf": 0.4,
+        "iou": 0.9,
         "classes": [0]
     },
     "seed": 42,

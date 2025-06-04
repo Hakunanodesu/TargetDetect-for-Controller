@@ -9,5 +9,5 @@ if __name__ == '__main__':
     print(f"正在检查是否支持CUDA...{torch.cuda.is_available()}")
 
     saved_name = "epoch1000_"
-    model = YOLO11()
+    model = YOLO11("yolo11s.pt")
     model.train(data="./datasets/apex.yaml", name=saved_name)

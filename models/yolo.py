@@ -14,6 +14,7 @@ class YOLO11():
         with open("./configs/cfg_yolo.json", "r") as f:
             config = json.load(f)
         self.infer_conf = config["inference_settings"]["conf"]
+        self.infer_iou = config["inference_settings"]["iou"]
         self.infer_classes = config["inference_settings"]["classes"]
         self.train_epochs = config["train_settings"]["epochs"]
         self.train_patience = config["train_settings"]["patience"]
@@ -30,6 +31,7 @@ class YOLO11():
         results = self.model.predict(
             source=source, 
             conf=self.infer_conf, 
+            iou=self.infer_iou,
             imgsz=self.screenshot_size,
             device=self.device,
             classes=self.infer_classes,
