@@ -48,6 +48,7 @@ if __name__ == "__main__":
                     config = json.load(f)
                 track_strength = config["track_settings"]["track_strength"]
                 snap_strength = config["track_settings"]["snap_strength"]
+                hipfire_scale = config["track_settings"]["hipfire_scale"]
                 snap_size = config["track_settings"]["snap_size"]
                 snap_center = snap_size / 2
                 screenshot_size = config["screenshot_settings"]["size"]
@@ -96,8 +97,8 @@ if __name__ == "__main__":
                             s_strength = snap_strength
                             t_strength = track_strength
                             if mapper.dual_sense_state["lt"] < 127:
-                                s_strength /= 2
-                                t_strength /= 2
+                                s_strength *= hipfire_scale
+                                t_strength *= hipfire_scale
                             if (torch.abs(xy_result[min_idx]) < snap_center).all():
                                 rx_offset = xy_result[min_idx][0] * (255 / snap_size) * s_strength
                                 ry_offset = xy_result[min_idx][1] * (255 / snap_size) * s_strength

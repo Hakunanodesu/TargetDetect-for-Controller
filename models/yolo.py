@@ -21,10 +21,10 @@ class YOLO11():
         self.train_batch = config["train_settings"]["batch"]
         self.train_cache = config["train_settings"]["cache"]
         self.train_workers = config["train_settings"]["workers"]
+        self.imgsz = config["imgsz"]
         self.seed = config["seed"]
         with open("./configs/cfg_global.json") as f:
             config = json.load(f)
-        self.screenshot_size = config["screenshot_settings"]["size"]
         self.device = config["device"]
 
     def inference(self, source):
@@ -32,7 +32,7 @@ class YOLO11():
             source=source, 
             conf=self.infer_conf, 
             iou=self.infer_iou,
-            imgsz=self.screenshot_size,
+            imgsz=self.imgsz,
             device=self.device,
             classes=self.infer_classes,
             verbose=False

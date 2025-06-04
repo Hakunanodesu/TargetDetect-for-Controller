@@ -2,13 +2,14 @@
     "first_run": false,
     "device": null,
     "screenshot_settings": {
-        "size": 640,
+        "size": 480,
         "method": "dxcam"
     },
     "track_settings": {
         "track_strength": 1,
-        "snap_size": 200,
-        "snap_strength": 2
+        "snap_size": 120,
+        "snap_strength": 1,
+        "hipfire_scale": 0.7
     },
     "model_path": "./runs/detect/yolo11n_epoch152.engine",
     "controller": {

@@ -11,5 +11,6 @@
         "batch": 64,
         "cache": "disk",
         "workers": 2
-    }
+    },
+    "imgsz": 640
 }
