@@ -11,16 +11,18 @@ class YOLO11():
         self.model = YOLO(model_path, task='detect')
         print(f"推理模型载入完成，当前模型：{self.model_name}\n")
 
-        with open("config.json", "r") as f:
+        with open("./models/cfg_yolo.json", "r") as f:
             config = json.load(f)
         self.infer_conf = config["inference_settings"]["conf"]
-        self.screenshot_size = config["screenshot_size"]
         self.infer_classes = config["inference_settings"]["classes"]
         self.train_epochs = config["train_settings"]["epochs"]
         self.train_patience = config["train_settings"]["patience"]
         self.train_batch = config["train_settings"]["batch"]
         self.train_cache = config["train_settings"]["cache"]
         self.train_workers = config["train_settings"]["workers"]
+        with open("./cfg_global.json") as f:
+            config = json.load(f)
+        self.screenshot_size = config["screenshot_settings"]["size"]
         self.device = config["device"]
         self.seed = config["seed"]
 
@@ -35,7 +37,7 @@ class YOLO11():
         )
         return results[0]
     
-    def train(self, data: str, name: str = None):
+    def train(self, data: str, name: str = None, resume=False):
         self.model.train(
             data=data,
             epochs=self.train_epochs,
@@ -45,5 +47,6 @@ class YOLO11():
             seed=self.seed,
             cache=self.train_cache,
             workers=self.train_workers,
-            name=name
+            name=name,
+            resume=resume
         )

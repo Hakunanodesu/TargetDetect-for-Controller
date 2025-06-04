@@ -1,13 +1,33 @@
 from ultralytics import YOLO
 import ctypes
-import psutil
-import GPUtil
+# import psutil
+# import GPUtil
 import mss
+from pywinusb import hid
+from pathlib import Path
 
-def get_cpu_gpu_usage():
-    total_cpu = psutil.cpu_percent()
-    total_gpu = GPUtil.getGPUs()[0].load * 100
-    return total_cpu, total_gpu
+
+def find_model_files():
+    """
+    在当前工作目录（及其子目录）中查找后缀为 .pt、.onnx、.engine 的文件，
+    并返回它们相对于当前工作目录的路径列表。
+    """
+    cwd = Path.cwd()
+    extensions = {'.pt', '.onnx', '.engine'}
+    result = []
+
+    for path in cwd.rglob('*'):
+        if path.is_file() and path.suffix.lower() in extensions:
+            # 将绝对路径转换为相对于 cwd 的相对路径
+            rel_path = path.relative_to(cwd)
+            result.append("./" + str(rel_path).replace('\\', '/'))
+
+    return result
+
+# def get_cpu_gpu_usage():
+#     total_cpu = psutil.cpu_percent()
+#     total_gpu = GPUtil.getGPUs()[0].load * 100
+#     return total_cpu, total_gpu
 
 def cvtmodel(model_path: str, fmt: str):
     model = YOLO(model_path)
@@ -49,7 +69,27 @@ def get_screenshot_region(screenshot_size):
         }
     return region
 
-def median_of_three(x, max, min):
+def enum_hid_devices():
+    """
+    枚举系统中所有 HID 设备，返回一个集合（set），
+    其中每个元素为三元组 (vendor_id, product_id, device_path)。
+    之所以包含 device_path，是为了区分同样 VID/PID 但路径不同的多个设备。
+    """
+    device_set = set()
+    # 创建一个 HID 设备筛选器，不指定任何 VID/PID，表示获取所有 HID 设备
+    all_devices = hid.HidDeviceFilter().get_devices()
+    for device in all_devices:
+        try:
+            vid = device.vendor_id
+            pid = device.product_id
+            path = device.device_path  # 唯一标识此设备的路径
+            device_set.add((vid, pid, path))
+        except Exception:
+            # 某些设备可能取不到 vendor_id/product_id，就跳过
+            continue
+    return device_set
+
+def median_of_three(x, max, min): # 比min，max嵌套函数更快
     if x < min:
         return min
     elif x > max:
@@ -57,5 +97,7 @@ def median_of_three(x, max, min):
     else:
         return x
     
+    
 if __name__ == "__main__":
-    print(get_cpu_gpu_usage())
+    # print(get_cpu_gpu_usage())
+    pass

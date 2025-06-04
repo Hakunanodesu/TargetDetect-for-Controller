@@ -1,0 +1,17 @@
+{
+    "device": null,
+    "screenshot_settings": {
+        "size": 640,
+        "method": "dxcam"
+    },
+    "track_settings": {
+        "track_strength": 1,
+        "snap_size": 200,
+        "snap_strength": 1
+    },
+    "model_path": "./runs/detect/best.pt",
+    "controller": {
+        "Vendor_ID": "0x0001",
+        "Product_ID": "0x0002"
+    }
+}

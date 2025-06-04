@@ -9,7 +9,8 @@ import numpy as np
 from models.yolo import YOLO11
 from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
-from utils.tools import get_screenshot_region, get_screenshot_region_dxcam, get_cpu_gpu_usage
+from utils.tools import get_screenshot_region, get_screenshot_region_dxcam
+
 
 if __name__ == "__main__":
     """
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         print(f"正在检查是否支持CUDA...{torch.cuda.is_available()}")
         print("你可以在任何时候通过Ctrl+C退出程序")
 
-        with open("config.json", "r") as f:
+        with open("./cfg_global.json", "r") as f:
             config = json.load(f)
         vendor_id = int(config["controller"]["Vendor_ID"], 16)
         product_id = int(config["controller"]["Product_ID"], 16)
@@ -34,14 +35,15 @@ if __name__ == "__main__":
             time.sleep(3)
 
             try:
-                with open("config.json", "r") as f:
+                with open("./cfg_global.json", "r") as f:
                     config = json.load(f)
-                screenshot_size = config["screenshot_size"]
                 track_strength = config["track_settings"]["track_strength"]
-                snap_size = config["track_settings"]["snap_size"]
                 snap_strength = config["track_settings"]["snap_strength"]
-                img_center = screenshot_size / 2
+                snap_size = config["track_settings"]["snap_size"]
                 snap_center = snap_size / 2
+                screenshot_size = config["screenshot_settings"]["size"]
+                img_center = screenshot_size / 2
+                screenshot_method = config["screenshot_settings"]["method"]
                 model_path = config["model_path"]
                 
                 # 加载截图
@@ -59,10 +61,12 @@ if __name__ == "__main__":
                         cycle_start = time.perf_counter()
                         
                         grab_start = time.perf_counter()
-                        img = camera.grab_frame()
-                        if img is None:
-                            continue
-                        # img = np.array(sct.grab(region))[:, :, :3]
+                        if screenshot_method == "dxcam":
+                            img = camera.grab_frame()
+                            if img is None:
+                                continue
+                        else:
+                            img = np.array(sct.grab(region))[:, :, :3]
                         grab_end = time.perf_counter()
                         grab_latency = (grab_end - grab_start) * 1000
 
