@@ -9,3 +9,5 @@ datasets/*
 
 runs/detect/*
 !runs/detect/yolo11n.pt
+
+!**/.gitkeep
