@@ -2,7 +2,7 @@
     "first_run": false,
     "device": null,
     "screenshot_settings": {
-        "size": 320,
+        "size": 640,
         "method": "dxcam"
     },
     "track_settings": {
@@ -10,7 +10,7 @@
         "snap_size": 200,
         "snap_strength": 2
     },
-    "model_path": "./runs/detect/yolo11n_epoch152.pt",
+    "model_path": "./runs/detect/yolo11n_epoch152.engine",
     "controller": {
         "Vendor_ID": "0x054C",
         "Product_ID": "0x0DF2"
