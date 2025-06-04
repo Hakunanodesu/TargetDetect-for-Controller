@@ -62,7 +62,6 @@ TargetDetect-for-Controller/
 ### 环境配置
 
 1. 确保 CUDA 环境可用（如果使用 NVIDIA GPU 加速），请在 `https://developer.nvidia.com/cuda-downloads` 下载您的 GPU 所对应的 CUDA 版本。
-
 2. 安装 Python（3.11）及其依赖库（请确保安装的 PyTorch 版本跟您的 CUDA 版本能对应）：
    ```
    pip install -r requirements.txt
@@ -78,12 +77,8 @@ TargetDetect-for-Controller/
 
 ### 屏幕目标检测 + 手柄控制映射 + 追踪
 
-1. 连接 DualSense 手柄。
-2. 运行 `get_controller.py` 获取手柄的 Vendor ID (VID) 和 Product ID (PID)。
-3. 在 `cfg_global.json` 中配置手柄信息。
-4. 在 `cfg_global.json` 中配置模型权重路径。
-5. 在 `cfg_global.json` 中配置运行设备，如 `"cpu"` 或 `"cuda:0"` ，`null` 为自动检测。
-6. 运行 `run.py` 启动手柄控制映射。
+1. 运行 `init.py` 自动配置配置文件。
+2. 运行 `run.py` 启动手柄控制映射。
 
 ## 功能描述
 
