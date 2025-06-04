@@ -1,19 +1,21 @@
 import time
 import json
+import logging
+import traceback
 
-from utils.tools import enum_hid_devices, find_model_files
+from utils.tools import enum_hid_devices, find_model_files, get_nvidia_gpu_info, cvtmodel, get_cpu_info
 
 
 def main():
-    print(">>> 请根据提示操作以完成初始配置，您可以在任何时候按 Ctrl+C 退出。（回车以继续）")
-    input()
-
-    with open("./cfg_global.json", "r") as f:
-        config = json.load(f)
-
     try:
+        print(">>> 请根据提示操作以完成初始配置，您可以在任何时候按 Ctrl+C 退出。（回车以继续）")
+        input()
+
+        with open("./cfg_global.json", "r") as f:
+            config = json.load(f)
+
         while True:
-            flag = input(">>> 1. 初始化手柄配置 (yes/no) ")
+            flag = input(">>> 1. 初始化手柄配置（yes/no）")
             if flag.lower() == "yes":
                 print(">>> 开始枚举当前 HID 设备 ...")
                 prev_devices = enum_hid_devices()
@@ -48,19 +50,71 @@ def main():
                 print(">>> 输入无效，请重新输入。")
 
         while True:
-            flag = input(">>> 2. 初始化模型配置 (yes/no) ")
+            flag = input(">>> 2. 初始化截图配置（yes/no）")
+            if flag.lower() == "yes":
+                info = "通常来说不管您使用的是 NVIDIA GPU 还是 AMD GPU，dxcam 都能提供更高的性能，但若是您遇到了卡顿的情况，请切换回 mss。"
+                while True:
+                    method = input(f">>> 请选择要使用的截图方法。{info}（dxcam/mss）：")
+                    info = ""
+                    if method == "dxcam" or method == "mss":
+                        config["screenshot_settings"]["method"] = method
+                        break
+                    else:
+                        print(">>> 输入无效，请重新输入。")
+                print(">>> 截图配置完成。")
+                break
+            elif flag.lower() == "no":
+                print(">>> 跳过截图配置。")
+                break
+            else:
+                print(">>> 输入无效，请重新输入。")
+
+        while True:
+            flag = input(">>> 3. 初始化模型配置（yes/no）")
             if flag.lower() == "yes":
                 print(">>> 开始枚举工作目录下的模型文件。")
                 files = find_model_files()
                 print(f">>> 检测到 {len(files)} 个模型文件。")
                 for i, file in enumerate(files):
                     print(f"[{i}] {file}")
-                index = input(">>> 请选择要使用的模型文件（输入序号）：")
-                if index.isdigit() and 0 <= int(index) < len(files):
-                    config["model_path"] = files[int(index)]
-                else:
-                    print(">>> 输入无效，请重新输入。")
-                    continue
+                while True:
+                    index = input(">>> 请选择要使用的模型文件（输入序号）：")
+                    if index.isdigit() and 0 <= int(index) < len(files):
+                        config["model_path"] = files[int(index)]
+
+                        suffix = config["model_path"].split(".")[-1]
+                        if suffix == "pt":
+                            while True:
+                                fmt_flag = input(">>> 检测到 PyTorch 格式模型权重文件，是否优化格式以提高性能？（yes/no）")
+                                if fmt_flag.lower() == "yes":
+                                    gpu_models = get_nvidia_gpu_info()
+                                    vendor, cpu_model = get_cpu_info()
+                                    if gpu_models:
+                                        print(">>> 检测到 NVIDIA 显卡：")
+                                        for model in gpu_models:
+                                            print(" -", model)
+                                        print(">>> 正在导出TensorRT格式...")
+                                        fmt = "engine"
+                                    else:
+                                        if vendor == "GenuineIntel":
+                                            print(">>> 检测到 Intel CPU：")
+                                            print(" -", cpu_model)
+                                            print(">>> 正在导出 OpenVINO 格式...")
+                                            fmt = "openvino"
+                                        else:
+                                            print(">>> 未检测到 NVIDIA 显卡和 Intel CPU。")
+                                            print(">>> 正在导出 ONNX 格式...")
+                                            fmt = "onnx"
+                                    cvtmodel(config["model_path"], fmt)
+                                    config["model_path"] = config["model_path"].replace(".pt", f".{fmt}")
+                                    break
+                                elif fmt_flag.lower() == "no":
+                                    break
+                                else:
+                                    print(">>> 输入无效，请重新输入。")
+                        break
+                    else:
+                        print(">>> 输入无效，请重新输入。")
                 print(">>> 模型配置完成。")
                 break
             elif flag.lower() == "no":
@@ -73,7 +127,11 @@ def main():
             json.dump(config, f, indent=4)
         print(">>> 初始配置完成。")
     except KeyboardInterrupt:
-        print(">>> 程序已停止。")
+        print("\n>>> 程序已停止。")
+    except Exception as e:
+        logging.error("发生异常：%s", str(e))
+        logging.error("异常类型：%s", type(e).__name__)
+        logging.error("完整堆栈信息：\n%s", traceback.format_exc())
 
 
 if __name__ == "__main__":

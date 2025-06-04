@@ -5,6 +5,8 @@ import time
 import sys
 import mss
 import numpy as np
+import logging
+import traceback
 
 from models.yolo import YOLO11
 from modules.controller import DualSenseToX360Mapper
@@ -131,8 +133,6 @@ if __name__ == "__main__":
             except KeyboardInterrupt:
                 pass
             except Exception as e:
-                import logging
-                import traceback
                 logging.error("发生异常：%s", str(e))
                 logging.error("异常类型：%s", type(e).__name__)
                 logging.error("完整堆栈信息：\n%s", traceback.format_exc())

@@ -5,7 +5,7 @@ import json
 
 class YOLO11():
 
-    def __init__(self, model_path: str = "yolo11n.pt"):
+    def __init__(self, model_path: str = "./runs/detect/yolo11n.pt"):
         self.model_name = os.path.basename(model_path)
         print("\n正在载入推理模型...")
         self.model = YOLO(model_path, task='detect')
@@ -20,11 +20,11 @@ class YOLO11():
         self.train_batch = config["train_settings"]["batch"]
         self.train_cache = config["train_settings"]["cache"]
         self.train_workers = config["train_settings"]["workers"]
+        self.seed = config["seed"]
         with open("./cfg_global.json") as f:
             config = json.load(f)
         self.screenshot_size = config["screenshot_settings"]["size"]
         self.device = config["device"]
-        self.seed = config["seed"]
 
     def inference(self, source):
         results = self.model.predict(
@@ -37,7 +37,7 @@ class YOLO11():
         )
         return results[0]
     
-    def train(self, data: str, name: str = None, resume=False):
+    def train(self, data: str, name: str = None):
         self.model.train(
             data=data,
             epochs=self.train_epochs,
@@ -48,5 +48,4 @@ class YOLO11():
             cache=self.train_cache,
             workers=self.train_workers,
             name=name,
-            resume=resume
         )

@@ -11,5 +11,3 @@ if __name__ == '__main__':
     saved_name = "epoch1000_"
     model = YOLO11()
     model.train(data="./datasets/apex.yaml", name=saved_name)
-
-    cvtmodel(f"./runs/detect/{saved_name}/weights/best.pt", "engine")

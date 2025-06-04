@@ -8,4 +8,4 @@ datasets/*
 !datasets/bus.jpg
 
 runs/detect/*
-!runs/detect/best.pt
+!runs/detect/yolo11n.pt
