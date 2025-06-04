@@ -94,19 +94,19 @@ def main():
                                         for model in gpu_models:
                                             print(" -", model)
                                         print(">>> 正在导出TensorRT格式...")
-                                        fmt = "engine"
+                                        fmt = ".engine"
                                     else:
                                         if vendor == "GenuineIntel":
                                             print(">>> 检测到 Intel CPU：")
                                             print(" -", cpu_model)
                                             print(">>> 正在导出 OpenVINO 格式...")
-                                            fmt = "openvino"
+                                            fmt = ""
                                         else:
                                             print(">>> 未检测到 NVIDIA 显卡和 Intel CPU。")
                                             print(">>> 正在导出 ONNX 格式...")
-                                            fmt = "onnx"
+                                            fmt = ".onnx"
                                     cvtmodel(config["model_path"], fmt)
-                                    config["model_path"] = config["model_path"].replace(".pt", f".{fmt}")
+                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}")
                                     break
                                 elif fmt_flag.lower() == "no":
                                     break
