@@ -1,4 +1,8 @@
 *.pt
+*.onnx
+*.engine
+*_openvino_model/
+
 *.backup
 
 .vscode/

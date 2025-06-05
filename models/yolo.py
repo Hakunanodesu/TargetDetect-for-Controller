@@ -11,7 +11,7 @@ class YOLO11():
         self.model = YOLO(model_path, task='detect')
         print(f"推理模型载入完成，当前模型：{self.model_name}\n")
 
-        with open("./configs/cfg_yolo.json", "r") as f:
+        with open("./configs/cfg_model.json", "r") as f:
             config = json.load(f)
         self.infer_conf = config["inference_settings"]["conf"]
         self.infer_iou = config["inference_settings"]["iou"]
@@ -27,7 +27,7 @@ class YOLO11():
             config = json.load(f)
         self.device = config["device"]
 
-    def inference(self, source):
+    def predict(self, source):
         results = self.model.predict(
             source=source, 
             conf=self.infer_conf, 

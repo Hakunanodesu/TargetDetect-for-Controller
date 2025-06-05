@@ -11,6 +11,7 @@ import os
 import argparse
 
 from models.yolo import YOLO11
+from models.onnx import APV5Experimental
 from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
 from utils.tools import get_screenshot_region, get_screenshot_region_dxcam
@@ -34,7 +35,7 @@ try:
             config = json.load(f)
         first_run = config["first_run"]
         if first_run:
-            response = os.system("python init.py")
+            os.system("python init.py")
 
     with open("./configs/cfg_global.json", "r") as f:
         config = json.load(f)
@@ -66,12 +67,12 @@ try:
             region = get_screenshot_region(screenshot_size)
 
             # 加载推理模型
-            model = YOLO11(model_path)
-            model.inference("./bus.jpg")
+            # model = YOLO11("./yolo11n_epoch152.pt")
+            model = APV5Experimental(model_path)
 
             last_print_time = time.time()
             with mss.mss() as sct:
-                print("\n\n\n")
+                print(f"\n当前Provider：{model.provider}\n\n\n")
                 while True:
                     cycle_start = time.perf_counter()
                     
@@ -86,14 +87,16 @@ try:
                     grab_latency = (grab_end - grab_start) * 1000
 
                     infer_start = time.perf_counter()
-                    result = model.inference(img)
+                    # result = model.predict(img)
+                    result, image = model.predict(img)
                     infer_end = time.perf_counter()
                     infer_latency = (infer_end - infer_start) * 1000
 
-                    xy_result = result.boxes.xywh[:, :2] - img_center
+                    # xy_result = result.boxes.xywh[:, :2] - img_center
+                    xy_result = torch.tensor(result) - img_center
                     if (
                         xy_result.size(0) != 0 and \
-                        (mapper.dual_sense_state["rt"] > 127 or mapper.dual_sense_state["lt"] > 127)
+                        (mapper.dual_sense_state["rt"] > 127 or mapper.dual_sense_state["lt"] > 255)
                     ):
                         #中心距离排序
                         distances = torch.abs(xy_result[:, 0]) + \
@@ -114,15 +117,14 @@ try:
                             rx_offset,
                             ry_offset
                         )
-                        # print("origin", xy_result[min_idx])
-                        # print("offset", rx_offset, ry_offset)
                     else:
                         mapper.rx_override = None
                         mapper.ry_override = None
 
                     # # 预览窗口（调试用，正常使用时请注释掉）
-                    # annotated_frame = result.plot()
-                    # cv2.imshow(f"{model.model_name} Detection", annotated_frame)
+                    # # annotated_frame = result.plot()
+                    # annotated_frame = image
+                    # cv2.imshow("Detection", annotated_frame)
                     # # 加上这一行，避免窗口卡死。1 毫秒内没有按键则返回 -1
                     # if cv2.waitKey(1) & 0xFF == ord('q'):
                     #     # 按 q 键可退出循环
@@ -139,7 +141,7 @@ try:
                         sys.stdout.write("\033[3A")
                         sys.stdout.write(f"\r\033[K[Latency] cycle耗时：{cycle_latency:.3f} ms\n")
                         sys.stdout.write(f"\r\033[K[Latency] grab耗时：{grab_latency:.3f} ms\n")
-                        sys.stdout.write(f"\r\033[K[Latency] infer耗时：{infer_latency:.3f} ms\n")
+                        sys.stdout.write(f"\r\033[K[Latency] inference耗时：{infer_latency:.3f} ms\n")
                         # sys.stdout.write(f"\r\033[K[Usage] CPU: {cpu_usg:.2f}% GPU: {gpu_usg:.2f}%\n")
                         sys.stdout.flush()
                         last_print_time = now
