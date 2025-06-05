@@ -9,7 +9,7 @@
         "track_strength": 0.2,
         "snap_size": 80,
         "snap_strength": 0.8,
-        "hipfire_scale": 0.6
+        "hipfire_scale": 0.5
     },
     "model_path": "./apv5.onnx",
     "controller": {

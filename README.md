@@ -30,7 +30,7 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/your-repo/TargetDetect-for-Controller.git
+git clone https://github.com/Hakunanodesu/TargetDetect-for-Controller.git
 cd TargetDetect-for-Controller
 
 # 安装依赖
