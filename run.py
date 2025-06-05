@@ -27,7 +27,7 @@ args = parser.parse_args()
 try:
     # 检查GPU是否可用
     torch.cuda.is_available()
-    print("你可以在任何时候通过Ctrl+C退出程序")
+    print("你可以在任何时候通过 Ctrl+C 退出程序")
 
     if not args.debug:
         with open("./configs/cfg_global.json", "r") as f:
@@ -45,7 +45,7 @@ try:
     mapper.start()
 
     while True:
-        print("\n3s后重新载入配置文件并启动...")
+        print("\n3s后重新载入配置文件并启动...（Ctrl+C 退出）")
         time.sleep(3)
 
         try:

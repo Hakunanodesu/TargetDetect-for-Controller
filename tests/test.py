@@ -1,12 +1,11 @@
-import wmi
+import json
 
-def get_cpu_info():
-    w = wmi.WMI()
-    for cpu in w.Win32_Processor():
-        vendor = cpu.Manufacturer  # 厂商，如 "GenuineIntel" 或 "AuthenticAMD"
-        name = cpu.Name            # 型号，如 "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz"
-        return vendor, name
+from modules.controller import DualSenseToX360Mapper
 
-vendor, model = get_cpu_info()
-print(f"CPU 厂商: {vendor}")
-print(f"CPU 型号: {model}")
+with open("./configs/cfg_global.json", "r") as f:
+    config = json.load(f)
+vendor_id = int(config["controller"]["Vendor_ID"], 16)
+product_id = int(config["controller"]["Product_ID"], 16)
+
+mapper = DualSenseToX360Mapper(vendor_id=vendor_id, product_id=product_id, poll_interval=0.002)
+mapper.start()

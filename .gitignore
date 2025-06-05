@@ -4,6 +4,8 @@
 .vscode/
 **/__pycache__/
 
+tests/*
+
 datasets/*
 !datasets/bus.jpg
 
