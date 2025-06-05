@@ -67,7 +67,7 @@ try:
 
             # 加载推理模型
             model = YOLO11(model_path)
-            model.inference("./datasets/bus.jpg")
+            model.inference("./bus.jpg")
 
             last_print_time = time.time()
             with mss.mss() as sct:
