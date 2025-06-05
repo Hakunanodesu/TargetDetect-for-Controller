@@ -15,46 +15,26 @@
 
 ```
 TargetDetect-for-Controller/
-├── cfg_global.json     # 全局配置文件
-├── datasets/           # 数据集目录
-│   └── apex.yaml       # 数据集配置文件
-├── get_controller.py   # 获取手柄信息的脚本
-├── models/             # 模型目录
-│   ├── cfg_yolo.json   # YOLO模型配置文件
-│   └── yolo.py         # YOLO模型定义
-├── modules/            # 模块目录
-│   ├── controller.py   # 手柄控制映射模块
-│   └── grab_screen.py  # 屏幕截图模块
-├── README.md           # 项目说明文档
-├── requirements.txt    # 项目依赖列表
-├── run.py              # 主运行脚本
-├── train.py            # 训练脚本
-├── utils/              # 工具目录
-└── tools.py            # 工具函数
-```
-
-# 项目说明文档
-
-## 文件结构
-
-```
-TargetDetect-for-Controller/
-├── cfg_global.json           # 全局配置文件
+├── configs/                  # 配置文件目录
+│   ├── cfg_global.json       # 全局配置文件
+│   └── cfg_yolo.json         # YOLO模型配置文件
 ├── datasets/                 # 数据集目录
-│   └── apex.yaml             # 数据集配置文件
-├── get_controller.py         # 获取手柄信息的脚本
 ├── models/                   # 模型目录
-│   ├── cfg_yolo.json         # YOLO模型配置文件
 │   └── yolo.py               # YOLO模型定义
-├── modules/                  # 模块目录
+├── modules/                  # 核心模块目录
 │   ├── controller.py         # 手柄控制映射模块
 │   └── grab_screen.py        # 屏幕截图模块
+├── runs/                     # 运行结果目录
+│   └── detect/               # 检测结果存储
+├── tests/                    # 测试文件目录
+│   └── test.py               # 测试脚本
+├── utils/                    # 工具目录
+│   └── tools.py              # 工具函数
 ├── README.md                 # 项目说明文档
+├── init.py                   # 初始化配置脚本
 ├── requirements.txt          # 项目依赖列表
 ├── run.py                    # 主运行脚本
-├── train.py                  # 训练脚本
-└── utils/                    # 工具目录
-    └── tools.py              # 工具函数
+└── train.py                  # 训练脚本
 ```
 
 ## 使用方法
