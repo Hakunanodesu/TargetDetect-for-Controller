@@ -100,13 +100,13 @@ def main():
                                             print(">>> 检测到 Intel CPU：")
                                             print(" -", cpu_model)
                                             print(">>> 正在导出 OpenVINO 格式...")
-                                            fmt = ""
+                                            fmt = "openvino"
                                         else:
                                             print(">>> 未检测到 NVIDIA 显卡和 Intel CPU。")
                                             print(">>> 正在导出 ONNX 格式...")
                                             fmt = ".onnx"
                                     cvtmodel(config["model_path"], fmt)
-                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}")
+                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}" if fmt != "openvino" else "")
                                     break
                                 elif fmt_flag.lower() == "no":
                                     break
