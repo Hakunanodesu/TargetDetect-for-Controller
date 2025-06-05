@@ -106,7 +106,7 @@ def main():
                                             print(">>> 正在导出 ONNX 格式...")
                                             fmt = ".onnx"
                                     cvtmodel(config["model_path"], fmt)
-                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}" if fmt != "openvino" else "")
+                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}" if fmt != "openvino" else "_openvino_model/")
                                     break
                                 elif fmt_flag.lower() == "no":
                                     break
