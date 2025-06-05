@@ -39,13 +39,13 @@ class YOLO11():
         )
         return results[0]
     
-    def train(self, data: str, name: str = None):
+    def train(self, data: str, name: str = None, device=None):
         self.model.train(
             data=data,
             epochs=self.train_epochs,
             patience=self.train_patience,
             batch=self.train_batch,
-            device=self.device,
+            device=device,
             seed=self.seed,
             cache=self.train_cache,
             workers=self.train_workers,
