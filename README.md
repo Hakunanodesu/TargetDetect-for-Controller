@@ -64,6 +64,12 @@ TargetDetect-for-Controller/
 - `run.py`：主运行脚本，负责启动手柄控制映射和实时目标检测。
 - `tools.py`：包含一些工具函数，如模型转换等。
 
+## 致谢
+
+- 感谢 [vgamepad](https://github.com/yannbouteiller/vgamepad) 作者及社区提供的游戏手柄模拟库，使得本项目能够轻松地通过软件来模拟实体手柄的输入操作，从而实现更灵活的自动化测试与控制。
+
+- 感谢 [Ultralytics](https://github.com/ultralytics/ultralytics) 团队的持续贡献，尤其是其开源的 YOLOv5/YOLOv8 系列目标检测模型，为本项目在目标检测和实时识别方面提供了强大、易用且高效的解决方案。
+
 ## 注意事项
 
 - 目前的版本仅支持 DualSense 手柄
