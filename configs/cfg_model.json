@@ -12,5 +12,6 @@
         "cache": "disk",
         "workers": 2
     },
-    "imgsz": 320
+    "imgsz": 320,
+    "device": null
 }

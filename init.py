@@ -2,6 +2,7 @@ import time
 import json
 import logging
 import traceback
+import os
 
 from utils.tools import enum_hid_devices, find_model_files, get_nvidia_gpu_info, cvtmodel, get_cpu_info
 
@@ -10,9 +11,27 @@ def main():
     try:
         print(">>> 请根据提示操作以完成初始配置，您可以在任何时候按 Ctrl+C 退出。（回车以继续）")
         input()
-
-        with open("./configs/cfg_global.json", "r") as f:
-            config = json.load(f)
+        if not os.path.exists("./configs/cfg_global.json"):
+            config = {
+                "screenshot_settings": {
+                    "size": 320,
+                    "method": "dxcam"
+                },
+                "track_settings": {
+                    "track_strength": 0.4,
+                    "snap_size": 100,
+                    "snap_strength": 0.8,
+                    "hipfire_scale": 0.8
+                },
+                "model_path": "./apv5.onnx",
+                "controller": {
+                    "Vendor_ID": "0x054C",
+                    "Product_ID": "0x0DF2"
+                }
+            }
+        else:
+            with open("./configs/cfg_global.json", "r") as f:
+                config = json.load(f)
 
         while True:
             flag = input(">>> 1. 初始化手柄配置（yes/no）")

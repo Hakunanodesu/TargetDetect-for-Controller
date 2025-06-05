@@ -8,7 +8,6 @@ import numpy as np
 import logging
 import traceback
 import os
-import argparse
 
 from models.yolo import YOLO11
 from models.onnx import APV5Experimental
@@ -16,10 +15,6 @@ from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
 from utils.tools import get_screenshot_region, get_screenshot_region_dxcam
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--debug', action='store_true', help='是否忽略first_run')
-args = parser.parse_args()
 
 """
 直接运行脚本时，会创建 YourControllerToX360Mapper 实例并启动映射。
@@ -30,12 +25,8 @@ try:
     torch.cuda.is_available()
     print("你可以在任何时候通过 Ctrl+C 退出程序")
 
-    if not args.debug:
-        with open("./configs/cfg_global.json", "r") as f:
-            config = json.load(f)
-        first_run = config["first_run"]
-        if first_run:
-            os.system("python init.py")
+    if not os.path.exists("./configs/cfg_global.json"):
+        os.system("python init.py")
 
     with open("./configs/cfg_global.json", "r") as f:
         config = json.load(f)

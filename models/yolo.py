@@ -23,10 +23,8 @@ class YOLO11():
         self.train_workers = config["train_settings"]["workers"]
         self.imgsz = config["imgsz"]
         self.seed = config["seed"]
-        with open("./configs/cfg_global.json") as f:
-            config = json.load(f)
         self.device = config["device"]
-
+        
     def predict(self, source):
         results = self.model.predict(
             source=source, 

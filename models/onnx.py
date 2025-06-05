@@ -20,7 +20,7 @@ class APV5Experimental:
         self.session = onnxruntime.InferenceSession(
             model_path,
             providers=[
-                # "TensorrtExecutionProvider",
+                "TensorrtExecutionProvider",
                 "CUDAExecutionProvider", 
                 "DmlExecutionProvider",
                 "OpenVINOExecutionProvider", 
