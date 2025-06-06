@@ -8,6 +8,7 @@
 
 # 忽略项目文件
 configs/cfg_global.json
+test.py
 
 # 保留 .gitkeep 文件
 !**/.gitkeep
