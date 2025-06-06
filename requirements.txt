@@ -4,6 +4,5 @@ opencv_python==4.11.0.86
 py3nvml==0.2.7
 pywinusb==0.4.2
 torch==2.7.0+cu128
-ultralytics==8.3.150
 vgamepad==0.1.0
 WMI==1.5.1
