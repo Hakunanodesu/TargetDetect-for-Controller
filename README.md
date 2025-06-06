@@ -69,13 +69,12 @@ pip install -r requirements.txt
 ## 配置文件
 
 ### 全局配置 (`configs/cfg_global.json`)
-- 推理设置（设备、批次大小等）
-- 屏幕截图配置
 - 目标追踪参数
-- 随机种子设置
+- 模型路径
+- 手柄信息
 
 ### 模型配置 (`configs/cfg_model.json`)
-- 模型路径和参数
+- 模型参数
 - 检测阈值
 - NMS 设置
 

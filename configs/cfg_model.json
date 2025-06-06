@@ -4,14 +4,5 @@
         "iou": 0.9,
         "classes": 0
     },
-    "seed": 42,
-    "train_settings": {
-        "epochs": 1000,
-        "patience": 10,
-        "batch": 64,
-        "cache": "disk",
-        "workers": 2
-    },
-    "imgsz": 320,
-    "device": null
+    "imgsz": 320
 }

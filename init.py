@@ -89,7 +89,6 @@ def main():
             else:
                 print(">>> 输入无效，请重新输入。")
         
-        config["first_run"] = False
         with open("configs/cfg_global.json", "w") as f:
             json.dump(config, f, indent=4)
         print(">>> 初始配置完成。")
