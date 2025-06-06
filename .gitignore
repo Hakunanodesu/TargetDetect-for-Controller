@@ -1,4 +1,4 @@
-# pipreqs . --ignore models/yolo.py,utils/convert.py,tests/test.py,train.py --force --use-local
+# pipreqs . --force --use-local
 # 忽略模型文件
 *.onnx
 
