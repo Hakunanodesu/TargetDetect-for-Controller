@@ -47,12 +47,10 @@ try:
             snap_center = snap_size / 2
             screenshot_size = config["track_settings"]["track_size"]
             img_center = screenshot_size / 2
-            screenshot_method = config["screenshot_settings"]["method"]
             model_path = config["model_path"]
             
             # 加载截图
             camera = ScreenGrabber(region=get_screenshot_region_dxcam(screenshot_size))
-            region = get_screenshot_region(screenshot_size)
 
             # 加载推理模型
             model = APV5Experimental(model_path)

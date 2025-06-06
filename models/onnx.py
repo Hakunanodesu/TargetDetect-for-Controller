@@ -14,7 +14,7 @@ class APV5Experimental:
         self.classes = config["inference_settings"]["classes"]
         with open("configs/cfg_global.json", "r") as f:
             config = json.load(f)
-        self.screenshot_size = config["screenshot_settings"]["size"]
+        self.screenshot_size = config["track_settings"]["track_size"]
         self.scale = self.screenshot_size / self.input_size
 
         self.session = onnxruntime.InferenceSession(

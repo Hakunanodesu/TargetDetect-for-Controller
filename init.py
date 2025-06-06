@@ -4,7 +4,7 @@ import logging
 import traceback
 import os
 
-from utils.tools import enum_hid_devices, find_model_files, get_nvidia_gpu_info, cvtmodel, get_cpu_info
+from utils.tools import enum_hid_devices, find_model_files
 
 
 def main():
@@ -66,26 +66,6 @@ def main():
                 print(">>> 输入无效，请重新输入。")
 
         while True:
-            flag = input(">>> 2. 初始化截图配置（yes/no）")
-            if flag.lower() == "yes":
-                info = "通常来说不管您使用的是 NVIDIA GPU 还是 AMD GPU，dxcam 都能提供更高的性能，但若是您遇到了卡顿的情况，请切换回 mss。"
-                while True:
-                    method = input(f">>> 请选择要使用的截图方法。{info}（dxcam/mss）：")
-                    info = ""
-                    if method == "dxcam" or method == "mss":
-                        config["screenshot_settings"]["method"] = method
-                        break
-                    else:
-                        print(">>> 输入无效，请重新输入。")
-                print(">>> 截图配置完成。")
-                break
-            elif flag.lower() == "no":
-                print(">>> 跳过截图配置。")
-                break
-            else:
-                print(">>> 输入无效，请重新输入。")
-
-        while True:
             flag = input(">>> 3. 初始化模型配置（yes/no）")
             if flag.lower() == "yes":
                 print(">>> 开始枚举工作目录下的模型文件。")
@@ -98,12 +78,7 @@ def main():
                     index = input(msg)
                     if index.isdigit() and 0 <= int(index) < len(files):
                         config["model_path"] = files[int(index)]
-
-                        suffix = config["model_path"].split(".")[-1]
-                        if suffix != "onnx":
-                            msg = ">>> 检测到非 ONNX 格式模型权重文件，请重新选择（输入序号）:"
-                        else:
-                            break
+                        break
                     else:
                         print(">>> 输入无效，请重新输入。")
                 print(">>> 模型配置完成。")
