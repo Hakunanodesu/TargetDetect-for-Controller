@@ -6,9 +6,17 @@
 .vscode/
 **/__pycache__/
 
+# 忽略模型目录
+models/
+
 # 忽略项目文件
 configs/cfg_global.json
 test.py
+build.bat
+
+# 忽略打包文件夹
+*.build/
+*.dist/
 
 # 保留 .gitkeep 文件
 !**/.gitkeep

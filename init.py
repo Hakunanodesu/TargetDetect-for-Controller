@@ -69,8 +69,14 @@ def main():
             flag = input(">>> 3. 初始化模型配置（yes/no）")
             if flag.lower() == "yes":
                 print(">>> 开始枚举工作目录下的模型文件。")
-                files = find_model_files()
-                print(f">>> 检测到 {len(files)} 个模型文件。")
+                while True:
+                    files = find_model_files()
+                    print(f">>> 检测到 {len(files)} 个模型文件。")
+                    if len(files) == 0:
+                        input(">>> 未检测到模型文件，请将模型文件放置在当前工作目录下。（回车以重新检测）")
+                        continue
+                    else:
+                        break
                 for i, file in enumerate(files):
                     print(f"[{i}] {file}")
                 msg = ">>> 请选择要使用的模型文件（输入序号）："
@@ -92,12 +98,15 @@ def main():
         with open("configs/cfg_global.json", "w") as f:
             json.dump(config, f, indent=4)
         print(">>> 初始配置完成。")
+        return 0
     except KeyboardInterrupt:
         print("\n>>> 程序已停止。")
+        return 1
     except Exception as e:
         logging.error("发生异常：%s", str(e))
         logging.error("异常类型：%s", type(e).__name__)
         logging.error("完整堆栈信息：\n%s", traceback.format_exc())
+        return 1
 
 
 if __name__ == "__main__":

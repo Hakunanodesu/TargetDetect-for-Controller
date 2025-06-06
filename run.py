@@ -1,5 +1,4 @@
 import cv2
-import torch
 import json
 import time
 import sys
@@ -7,7 +6,7 @@ import logging
 import traceback
 import os
 
-from models.onnx import APV5Experimental
+from modules.onnx import APV5Experimental
 from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
 from utils.tools import get_screenshot_region_dxcam
@@ -18,12 +17,12 @@ from utils.tools import get_screenshot_region_dxcam
 按 Ctrl+C 终止循环并退出。
 """
 try:
-    # 检查GPU是否可用
-    torch.cuda.is_available()
     print("你可以在任何时候通过 Ctrl+C 退出程序")
 
     if not os.path.exists("configs/cfg_global.json"):
-        os.system("python init.py")
+        from init import main as init_main
+        if init_main() != 0:
+            raise KeyboardInterrupt
 
     with open("configs/cfg_global.json", "r") as f:
         config = json.load(f)
