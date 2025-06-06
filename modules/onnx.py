@@ -51,7 +51,7 @@ class APV5Experimental:
         confidences = confidences[mask]
 
         if len(boxes) == 0:
-            return [], image
+            return None, image
 
         # NMS 处理
         xyxy_boxes = boxes.copy()
@@ -64,11 +64,11 @@ class APV5Experimental:
         kept_boxes = boxes[keep]  # 原始 xywh，取中心点即可
 
         # 计算中心点，缩放回原图尺寸
-        cxcy_list = []
-        for box in kept_boxes:
+        cxcy_array = np.empty((len(kept_boxes), 2))
+        for i, box in enumerate(kept_boxes):
             cx = box[0] * self.scale
             cy = box[1] * self.scale
-            cxcy_list.append((float(cx), float(cy)))
+            cxcy_array[i] = [cx, cy]
 
             w = box[2] * self.scale
             h = box[3] * self.scale
@@ -78,7 +78,7 @@ class APV5Experimental:
             x2 = int(cx + w / 2)
             y2 = int(cy + h / 2)
             cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        return cxcy_list, image
+        return cxcy_array, image
 
     @staticmethod
     def nms(boxes, scores, iou_threshold):

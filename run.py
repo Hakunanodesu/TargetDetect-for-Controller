@@ -5,6 +5,7 @@ import sys
 import logging
 import traceback
 import os
+import numpy as np
 
 from modules.onnx import APV5Experimental
 from modules.controller import DualSenseToX360Mapper
@@ -71,21 +72,20 @@ try:
                 infer_end = time.perf_counter()
                 infer_latency = (infer_end - infer_start) * 1000
 
-                xy_result = torch.tensor(result) - img_center
                 if (
-                    xy_result.size(0) != 0 and \
+                    result and \
                     (mapper.dual_sense_state["rt"] > 127 or mapper.dual_sense_state["lt"] > 255)
                 ):
+                    xy_result = result - img_center
                     #中心距离排序
-                    distances = torch.abs(xy_result[:, 0]) + \
-                        torch.abs(xy_result[:, 1])
+                    distances = np.abs(xy_result[:, 0]) + np.abs(xy_result[:, 1])
                     min_idx = distances.argmin()
                     s_strength = snap_strength
                     t_strength = track_strength
                     if mapper.dual_sense_state["lt"] < 127:
                         s_strength *= hipfire_scale
                         t_strength *= hipfire_scale
-                    if (torch.abs(xy_result[min_idx]) < snap_center).all():
+                    if (np.abs(xy_result[min_idx]) < snap_center).all():
                         rx_offset = xy_result[min_idx][0] * (255 / snap_size) * s_strength
                         ry_offset = xy_result[min_idx][1] * (255 / snap_size) * s_strength
                     else:

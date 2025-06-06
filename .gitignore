@@ -13,6 +13,7 @@ models/
 configs/cfg_global.json
 test.py
 build.bat
+gitpush.bat
 
 # 忽略打包文件夹
 *.build/
