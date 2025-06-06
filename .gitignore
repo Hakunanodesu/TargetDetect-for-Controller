@@ -1,4 +1,5 @@
 # pipreqs . --force --use-local
+
 # 忽略模型文件
 *.onnx
 
@@ -15,10 +16,11 @@ test.py
 build.bat
 gitpush.bat
 
-# 忽略打包文件夹
+# 忽略打包文件（夹）
 *.build/
 *.dist/
 *.onefile-build
+*.exe
 
 # 保留 .gitkeep 文件
 !**/.gitkeep
