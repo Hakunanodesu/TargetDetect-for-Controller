@@ -66,7 +66,7 @@ def main():
                 print(">>> 输入无效，请重新输入。")
 
         while True:
-            flag = input(">>> 3. 初始化模型配置（yes/no）")
+            flag = input(">>> 2. 初始化模型配置（yes/no）")
             if flag.lower() == "yes":
                 print(">>> 开始枚举工作目录下的模型文件。")
                 while True:
