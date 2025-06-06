@@ -1,10 +1,13 @@
-import cv2
 import json
 import time
 import sys
 import logging
 import traceback
 import os
+import signal
+import ctypes
+
+import cv2
 import numpy as np
 
 from modules.onnx import APV5Experimental
@@ -12,6 +15,36 @@ from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
 from utils.tools import get_screenshot_region_dxcam
 
+ctypes.windll.ole32.CoInitialize(None)
+
+def cleanup_and_exit(exit_code=0):
+    """
+    在程序即将退出时，确保：
+    1. 停止 mapper，并销毁所有关联的 COM 对象。
+    2. 调用 CoUninitialize。
+    3. 退出进程。
+    """
+    try:
+        if 'mapper' in globals() and mapper is not None:
+            try:
+                mapper.stop()
+            except Exception:
+                pass
+        
+        try:
+            cv2.destroyAllWindows()
+        except Exception:
+            pass
+
+    finally:
+        try:
+            ctypes.windll.ole32.CoUninitialize()
+        except Exception:
+            pass
+        
+        sys.exit(exit_code)
+
+signal.signal(signal.SIGINT, lambda sig, frame: cleanup_and_exit(0))
 
 """
 直接运行脚本时，会创建 YourControllerToX360Mapper 实例并启动映射。
@@ -131,9 +164,5 @@ try:
 except KeyboardInterrupt:
     pass
 finally:
-    try:
-        mapper.stop()
-        cv2.destroyAllWindows()
-    except:
-        pass
-    print("已退出")
+    cleanup_and_exit(0)
+    print("程序已退出")
