@@ -1,7 +1,5 @@
 from ultralytics import YOLO
 import ctypes
-# import psutil
-# import GPUtil
 import mss
 from pywinusb import hid
 from pathlib import Path
@@ -47,11 +45,6 @@ def find_model_files():
             result.append("./" + str(rel_path).replace('\\', '/'))
 
     return result
-
-# def get_cpu_gpu_usage():
-#     total_cpu = psutil.cpu_percent()
-#     total_gpu = GPUtil.getGPUs()[0].load * 100
-#     return total_cpu, total_gpu
 
 def cvtmodel(model_path: str, fmt: str):
     model = YOLO(model_path)

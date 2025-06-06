@@ -6,13 +6,13 @@ import json
 
 class APV5Experimental:
     def __init__(self, model_path):
-        with open("./configs/cfg_model.json", "r") as f:
+        with open("configs/cfg_model.json", "r") as f:
             config = json.load(f)
         self.input_size = config["imgsz"]
         self.conf_thres = config["inference_settings"]["conf"]
         self.iou_thres = config["inference_settings"]["iou"]
         self.classes = config["inference_settings"]["classes"]
-        with open("./configs/cfg_global.json", "r") as f:
+        with open("configs/cfg_global.json", "r") as f:
             config = json.load(f)
         self.screenshot_size = config["screenshot_settings"]["size"]
         self.scale = self.screenshot_size / self.input_size
@@ -20,10 +20,7 @@ class APV5Experimental:
         self.session = onnxruntime.InferenceSession(
             model_path,
             providers=[
-                "TensorrtExecutionProvider",
-                "CUDAExecutionProvider", 
                 "DmlExecutionProvider",
-                "OpenVINOExecutionProvider", 
                 "CPUExecutionProvider"
             ]
         )
@@ -104,8 +101,8 @@ class APV5Experimental:
         return keep
 
 if __name__ == "__main__":
-    model = APV5Experimental("./apv5.onnx")
-    image = cv2.imread("./320.jpg")
+    model = APV5Experimental("apv5.onnx")
+    image = cv2.imread("320.jpg")
     cxcy_list = model.predict(image)
     print(cxcy_list)
     cv2.imshow("detection", model.img)

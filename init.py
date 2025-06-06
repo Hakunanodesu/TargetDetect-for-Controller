@@ -11,13 +11,10 @@ def main():
     try:
         print(">>> 请根据提示操作以完成初始配置，您可以在任何时候按 Ctrl+C 退出。（回车以继续）")
         input()
-        if not os.path.exists("./configs/cfg_global.json"):
+        if not os.path.exists("configs/cfg_global.json"):
             config = {
-                "screenshot_settings": {
-                    "size": 320,
-                    "method": "dxcam"
-                },
                 "track_settings": {
+                    "track_size": 320,
                     "track_strength": 0.4,
                     "snap_size": 100,
                     "snap_strength": 0.8,
@@ -30,7 +27,7 @@ def main():
                 }
             }
         else:
-            with open("./configs/cfg_global.json", "r") as f:
+            with open("configs/cfg_global.json", "r") as f:
                 config = json.load(f)
 
         while True:
@@ -143,7 +140,7 @@ def main():
                 print(">>> 输入无效，请重新输入。")
         
         config["first_run"] = False
-        with open("./configs/cfg_global.json", "w") as f:
+        with open("configs/cfg_global.json", "w") as f:
             json.dump(config, f, indent=4)
         print(">>> 初始配置完成。")
     except KeyboardInterrupt:
