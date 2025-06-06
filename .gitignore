@@ -1,26 +1,13 @@
+# pipreqs . --ignore models/yolo.py,utils/convert.py,tests/test.py,train.py --force --use-local
 # 忽略模型文件
-*.pt
 *.onnx
-*.engine
-*_openvino_model/
-
-# 忽略备份文件
-*.backup
 
 # 忽略缓存文件
 .vscode/
 **/__pycache__/
 
-# 忽略项目文件夹
-tests/*
-datasets/*
-runs/*
-
 # 忽略项目文件
 configs/cfg_global.json
-models/yolo.py
-utils/convert.py
-train.py
 
 # 保留 .gitkeep 文件
 !**/.gitkeep

@@ -3,7 +3,6 @@ import torch
 import json
 import time
 import sys
-import numpy as np
 import logging
 import traceback
 import os
@@ -11,7 +10,7 @@ import os
 from models.onnx import APV5Experimental
 from modules.controller import DualSenseToX360Mapper
 from modules.grab_screen import ScreenGrabber
-from utils.tools import get_screenshot_region, get_screenshot_region_dxcam
+from utils.tools import get_screenshot_region_dxcam
 
 
 """

@@ -1,5 +1,4 @@
 import ctypes
-import mss
 from pywinusb import hid
 from pathlib import Path
 from py3nvml import py3nvml
@@ -61,26 +60,6 @@ def get_screenshot_region_dxcam(screenshot_size):
     )
     return region
 
-def get_screenshot_region(screenshot_size):
-    with mss.mss() as sct:
-        monitor = sct.monitors[1]
-        screen_width = monitor["width"]
-        screen_height = monitor["height"]
-
-        region_width = screenshot_size
-        region_height = screenshot_size
-
-        region_left = (screen_width  - region_width ) // 2
-        region_top  = (screen_height - region_height) // 2
-
-        region = {
-            "left":   region_left,
-            "top":    region_top,
-            "width":  region_width,
-            "height": region_height
-        }
-    return region
-
 def enum_hid_devices():
     """
     枚举系统中所有 HID 设备，返回一个集合（set），
@@ -109,7 +88,3 @@ def median_of_three(x, max, min): # 比min，max嵌套函数更快
     else:
         return x
     
-    
-if __name__ == "__main__":
-    # print(get_cpu_gpu_usage())
-    pass
