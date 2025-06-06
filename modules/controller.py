@@ -2,6 +2,7 @@ import pywinusb.hid as hid
 import vgamepad as vg
 import threading
 import time
+import sys
 
 from utils.tools import median_of_three
 
@@ -93,7 +94,7 @@ class DualSenseToX360Mapper:
         ).get_devices()
 
         if not all_devices:
-            print("未找到 DualSense 设备，请确认已通过 USB 或蓝牙连接。")
+            sys.stdout.write("\n未找到 DualSense 设备，请确认已通过 USB 或蓝牙连接。")
             return False
 
         # 只打开第一个匹配的 DualSense 设备
@@ -101,7 +102,7 @@ class DualSenseToX360Mapper:
         self._hid_device.open()
         # 注册回调，将收到的新数据传给 _input_handler 方法
         self._hid_device.set_raw_data_handler(lambda data: self._input_handler(data))
-        print(f"\n已连接并注册 DualSense (VID:0x{self.vendor_id:04X}, PID:0x{self.product_id:04X})")
+        sys.stdout.write(f"\n已连接并注册 DualSense (VID:0x{self.vendor_id:04X}, PID:0x{self.product_id:04X})")
         return True
 
     def _ds_to_xinput_axis(self, val: int) -> int:
@@ -239,7 +240,7 @@ class DualSenseToX360Mapper:
         if not self._find_and_register_dualsense():
             raise KeyboardInterrupt
 
-        print("虚拟 Xbox 360 手柄已创建。DualSense 的输入将直接映射到虚拟手柄上。")
+        sys.stdout.write("\n虚拟 Xbox 360 手柄已创建。DualSense 的输入将直接映射到虚拟手柄上。")
 
         # 重置（防止多次调用 start）
         self._stop_event.clear()
@@ -251,7 +252,7 @@ class DualSenseToX360Mapper:
                     self._map_to_x360()
                     time.sleep(self.poll_interval)
             except Exception as e:
-                print(f"映射循环遇到异常：{e}")
+                sys.stdout.write(f"映射循环遇到异常：{e}")
             finally:
                 # 确保退出时清理
                 self._cleanup()
@@ -274,11 +275,10 @@ class DualSenseToX360Mapper:
         """
         清理工作：关闭 DualSense 设备、重置虚拟手柄并提交更新
         """
-        print()
         if self._hid_device:
             try:
                 self._hid_device.close()
-                print("DualSense 设备已关闭。")
+                sys.stdout.write("\nDualSense 设备已关闭。")
             except Exception:
                 pass
             finally:
@@ -288,6 +288,6 @@ class DualSenseToX360Mapper:
             try:
                 self.virtual_gamepad.reset()
                 self.virtual_gamepad.update()
-                print("虚拟手柄已重置并关闭。")
+                sys.stdout.write("\n虚拟手柄已重置并关闭。")
             except Exception:
                 pass
