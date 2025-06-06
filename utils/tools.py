@@ -1,31 +1,7 @@
 import ctypes
 from pywinusb import hid
 from pathlib import Path
-from py3nvml import py3nvml
-import wmi
 
-def get_cpu_info():
-    w = wmi.WMI()
-    for cpu in w.Win32_Processor():
-        vendor = cpu.Manufacturer  # 厂商，如 "GenuineIntel" 或 "AuthenticAMD"
-        name = cpu.Name            # 型号，如 "Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz"
-        return vendor, name
-
-def get_nvidia_gpu_info():
-    try:
-        py3nvml.nvmlInit()
-        device_count = py3nvml.nvmlDeviceGetCount()
-        if device_count == 0:
-            return None
-        gpus = []
-        for i in range(device_count):
-            handle = py3nvml.nvmlDeviceGetHandleByIndex(i)
-            name = py3nvml.nvmlDeviceGetName(handle)
-            gpus.append(name.decode('utf-8') if isinstance(name, bytes) else name)
-        py3nvml.nvmlShutdown()
-        return gpus
-    except py3nvml.NVMLError:
-        return None
 
 def find_model_files():
     """

@@ -18,6 +18,7 @@ gitpush.bat
 # 忽略打包文件夹
 *.build/
 *.dist/
+*.onefile-build
 
 # 保留 .gitkeep 文件
 !**/.gitkeep
