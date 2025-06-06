@@ -1,4 +1,3 @@
-from ultralytics import YOLO
 import ctypes
 import mss
 from pywinusb import hid
@@ -45,10 +44,6 @@ def find_model_files():
             result.append("./" + str(rel_path).replace('\\', '/'))
 
     return result
-
-def cvtmodel(model_path: str, fmt: str):
-    model = YOLO(model_path)
-    model.export(format=fmt)
 
 def get_screenshot_region_dxcam(screenshot_size):
     user32 = ctypes.windll.user32

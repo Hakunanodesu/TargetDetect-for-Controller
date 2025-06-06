@@ -93,42 +93,17 @@ def main():
                 print(f">>> 检测到 {len(files)} 个模型文件。")
                 for i, file in enumerate(files):
                     print(f"[{i}] {file}")
+                msg = ">>> 请选择要使用的模型文件（输入序号）："
                 while True:
-                    index = input(">>> 请选择要使用的模型文件（输入序号）：")
+                    index = input(msg)
                     if index.isdigit() and 0 <= int(index) < len(files):
                         config["model_path"] = files[int(index)]
 
                         suffix = config["model_path"].split(".")[-1]
-                        if suffix == "pt":
-                            while True:
-                                fmt_flag = input(">>> 检测到 PyTorch 格式模型权重文件，是否优化格式以提高性能？（yes/no）")
-                                if fmt_flag.lower() == "yes":
-                                    gpu_models = get_nvidia_gpu_info()
-                                    vendor, cpu_model = get_cpu_info()
-                                    if gpu_models:
-                                        print(">>> 检测到 NVIDIA 显卡：")
-                                        for model in gpu_models:
-                                            print(" -", model)
-                                        print(">>> 正在导出TensorRT格式...")
-                                        fmt = ".engine"
-                                    else:
-                                        if vendor == "GenuineIntel":
-                                            print(">>> 检测到 Intel CPU：")
-                                            print(" -", cpu_model)
-                                            print(">>> 正在导出 OpenVINO 格式...")
-                                            fmt = "openvino"
-                                        else:
-                                            print(">>> 未检测到 NVIDIA 显卡和 Intel CPU。")
-                                            print(">>> 正在导出 ONNX 格式...")
-                                            fmt = ".onnx"
-                                    cvtmodel(config["model_path"], fmt)
-                                    config["model_path"] = config["model_path"].replace(".pt", f"{fmt}" if fmt != "openvino" else "_openvino_model/")
-                                    break
-                                elif fmt_flag.lower() == "no":
-                                    break
-                                else:
-                                    print(">>> 输入无效，请重新输入。")
-                        break
+                        if suffix != "onnx":
+                            msg = ">>> 检测到非 ONNX 格式模型权重文件，请重新选择（输入序号）:"
+                        else:
+                            break
                     else:
                         print(">>> 输入无效，请重新输入。")
                 print(">>> 模型配置完成。")

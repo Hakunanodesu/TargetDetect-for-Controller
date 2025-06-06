@@ -19,6 +19,7 @@ runs/*
 # 忽略项目文件
 configs/cfg_global.json
 models/yolo.py
+utils/convert.py
 train.py
 
 # 保留 .gitkeep 文件
