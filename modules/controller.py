@@ -259,6 +259,7 @@ class DualSenseToX360Mapper:
 
         self._mapping_thread = threading.Thread(target=run_loop, daemon=True)
         self._mapping_thread.start()
+        return True
 
     def stop(self):
         """
