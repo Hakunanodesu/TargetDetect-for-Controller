@@ -238,7 +238,7 @@ class DualSenseToX360Mapper:
         3. 启动一个后台线程，不断将 DualSense 输入映射到虚拟手柄
         """
         if not self._find_and_register_dualsense():
-            raise KeyboardInterrupt
+            return False
 
         sys.stdout.write("\n虚拟 Xbox 360 手柄已创建。DualSense 的输入将直接映射到虚拟手柄上。")
 

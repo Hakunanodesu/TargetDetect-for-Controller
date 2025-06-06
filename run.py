@@ -95,7 +95,11 @@ class App:
             product_id = int(config["controller"]["Product_ID"], 16)
 
             mapper = DualSenseToX360Mapper(vendor_id=vendor_id, product_id=product_id, poll_interval=0.002)
-            mapper.start()
+            con_status = mapper.start()
+            if not con_status:
+                self.running = False
+                self.root.after(0, self.button.config, {"text": "启动"})
+                return
 
             sys.stdout.write("\n正在载入配置文件并启动...（点击“停止”退出）")
 
