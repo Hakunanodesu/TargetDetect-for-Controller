@@ -16,7 +16,7 @@ def find_model_files():
         if path.is_file() and path.suffix.lower() in extensions:
             # 将绝对路径转换为相对于 cwd 的相对路径
             rel_path = path.relative_to(cwd)
-            result.append("./" + str(rel_path).replace('\\', '/'))
+            result.append(str(rel_path).replace('\\', '/'))
 
     return result
 

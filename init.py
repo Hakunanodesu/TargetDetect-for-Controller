@@ -86,9 +86,10 @@ class InitApp:
             self._print(">>> 未找到模型文件，请放入当前目录，按回车重试。")
             self.step = lambda x: self._poll_model_files()
         else:
+            self._print(f">>> 检测到 {len(files)} 个模型文件：")
             for i, f in enumerate(files):
                 self._print(f"[{i}] {f}")
-            self._print(">>> 请输入要使用的模型编号：")
+            self._print(">>> 请输入要使用的模型编号...")
             self.step = lambda x: self.select_model(x, files)
 
     def select_model(self, user_input, files):
