@@ -1,26 +1,17 @@
 # pipreqs . --force --use-local
 
-# 忽略模型文件
-*.onnx
-
 # 忽略缓存文件
 .vscode/
 **/__pycache__/
 
-# 忽略模型目录
-models/
+# 忽略模型文件
+*.onnx
 
 # 忽略项目文件
-configs/cfg_global.json
+user_config.json
 test.py
 build.bat
 gitpush.bat
-
-# 忽略打包文件（夹）
-*.build/
-*.dist/
-*.onefile-build/
-*.exe
 
 # 保留 .gitkeep 文件
 !**/.gitkeep

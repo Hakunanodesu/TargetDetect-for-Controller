@@ -6,16 +6,14 @@ import json
 
 class APV5Experimental:
     def __init__(self, model_path):
-        with open("configs/cfg_model.json", "r") as f:
+        self.input_size = 320
+        self.conf_thres = 0.4
+        self.iou_thres = 0.9
+        self.classes = 0
+        with open("user_config.json", "r") as f:
             config = json.load(f)
-        self.input_size = config["imgsz"]
-        self.conf_thres = config["inference_settings"]["conf"]
-        self.iou_thres = config["inference_settings"]["iou"]
-        self.classes = config["inference_settings"]["classes"]
-        with open("configs/cfg_global.json", "r") as f:
-            config = json.load(f)
-        self.screenshot_size = config["track_settings"]["track_size"]
-        self.scale = self.screenshot_size / self.input_size
+        self.ident_size = config["detect_settings"]["range"]["outer"]
+        self.scale = self.ident_size / self.input_size
 
         self.session = onnxruntime.InferenceSession(
             model_path,

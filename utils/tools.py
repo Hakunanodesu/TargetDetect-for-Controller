@@ -36,6 +36,23 @@ def get_screenshot_region_dxcam(screenshot_size):
     )
     return region
 
+def get_scaling_factor():
+    # 获取当前活动窗口的 DPI（仅支持 Windows 8.1 及以上）
+    try:
+        # 设置 DPI 感知
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE = 2
+    except:
+        pass  # 某些旧系统不支持
+
+    # 获取屏幕 DPI
+    hdc = ctypes.windll.user32.GetDC(0)
+    dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)  # LOGPIXELSX
+    ctypes.windll.user32.ReleaseDC(0, hdc)
+
+    # 计算放大系数
+    scaling = dpi / 96  # 96 是默认 DPI
+    return scaling
+
 def enum_hid_devices():
     """
     枚举系统中所有 HID 设备，返回一个集合（set），

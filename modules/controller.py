@@ -28,7 +28,7 @@ class DualSenseToX360Mapper:
 
         :param vendor_id: DualSense 供应商 ID，默认使用 Sony（0x054C）
         :param product_id: DualSense 产品 ID，默认使用 DualSense Edge（0x0DF2）
-        :param poll_interval: 映射循环的轮询间隔（秒），默认 0.01s
+        :param poll_interval: 映射循环的轮询间隔（秒）
         """
         self.vendor_id = vendor_id
         self.product_id = product_id
@@ -44,6 +44,7 @@ class DualSenseToX360Mapper:
             "rt": 0,       # 右扳机 (0-255)
             "shoulders_sticks_start_back": 0,  # 按钮掩码
             "buttons_hat": 0,                  # 按钮掩码
+            "touchpad_ps": 0,                  # 触控板和PS键状态 (0-3)
         }
 
         # 支持右摇杆叠加（偏移量）
@@ -67,8 +68,8 @@ class DualSenseToX360Mapper:
         :param data: bytearray，长度因设备而异
         """
         # 基本检查
-        # if len(data) < 9:
-        #     return
+        if len(data) < 11:  # 修改为11以包含新的数据位
+            return
 
         # 更新摇杆和扳机状态
         self.dual_sense_state["lx"] = data[1]
@@ -81,6 +82,9 @@ class DualSenseToX360Mapper:
         # 更新按钮掩码，高字节在 data[9]，低字节在 data[8]
         self.dual_sense_state["shoulders_sticks_start_back"] = data[9]
         self.dual_sense_state["buttons_hat"] = data[8]
+        
+        # 更新触控板和PS键状态
+        self.dual_sense_state["touchpad_ps"] = data[10]
 
     def _find_and_register_dualsense(self) -> bool:
         """
@@ -94,7 +98,7 @@ class DualSenseToX360Mapper:
         ).get_devices()
 
         if not all_devices:
-            sys.stdout.write("\n未找到 DualSense 设备，请确认已通过 USB 或蓝牙连接。")
+            sys.stdout.write("\n>>> 未找到 DualSense 设备，请确认已通过 USB 或蓝牙连接。")
             return False
 
         # 只打开第一个匹配的 DualSense 设备
@@ -102,7 +106,7 @@ class DualSenseToX360Mapper:
         self._hid_device.open()
         # 注册回调，将收到的新数据传给 _input_handler 方法
         self._hid_device.set_raw_data_handler(lambda data: self._input_handler(data))
-        sys.stdout.write(f"\n已连接并注册 DualSense (VID:0x{self.vendor_id:04X}, PID:0x{self.product_id:04X})")
+        sys.stdout.write(f"\n>>> 已连接并注册 DualSense (VID:0x{self.vendor_id:04X}, PID:0x{self.product_id:04X})")
         return True
 
     def _ds_to_xinput_axis(self, val: int) -> int:
@@ -143,6 +147,20 @@ class DualSenseToX360Mapper:
 
         # 4. 按钮 & D-Pad
         btns = self.dual_sense_state["buttons_hat"]
+        shoulders = self.dual_sense_state["shoulders_sticks_start_back"] & 0x0F
+
+        # 肩键（L1/R1）- 独立处理，不受扳机影响
+        self.virtual_gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
+        self.virtual_gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+        
+        # 左肩键 (L1)
+        if (shoulders & 0x01) != 0:
+            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
+        
+        # 右肩键 (R1)
+        if (shoulders & 0x02) != 0:
+            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
+
         # A 按钮
         if (btns & 0x20) != 0:
             self.virtual_gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_A)
@@ -176,6 +194,18 @@ class DualSenseToX360Mapper:
             self.virtual_gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
         else:
             self.virtual_gamepad.release_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+            
+        # 处理触控板和PS键（额外映射）
+        touchpad_ps = self.dual_sense_state["touchpad_ps"]
+        
+        # PS键映射到Start（额外）
+        # if (touchpad_ps & 0x01) != 0:
+        #     self.virtual_gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_START)
+            
+        # 触控板映射到Back（额外）
+        if (touchpad_ps & 0x02) != 0:
+            self.virtual_gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_BACK)
+            
         # Left Thumb（L3）
         if (sticks & 0x40) != 0:
             self.virtual_gamepad.press_button(button=vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_THUMB)
@@ -215,18 +245,6 @@ class DualSenseToX360Mapper:
             self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP)
             self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT)
 
-        # 肩键（L1/R1）
-        shoulders = self.dual_sense_state["shoulders_sticks_start_back"] & 0x0F
-        self.virtual_gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
-        self.virtual_gamepad.release_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-        if shoulders == 1:     # 左肩键
-            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
-        elif shoulders == 2:   # 右肩键
-            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-        elif shoulders == 3:   # 同时按下左+右
-            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER)
-            self.virtual_gamepad.press_button(vg.XUSB_BUTTON.XUSB_GAMEPAD_RIGHT_SHOULDER)
-
         # 最后提交一次报告，让系统感知最新状态
         self.virtual_gamepad.update()
 
@@ -240,7 +258,7 @@ class DualSenseToX360Mapper:
         if not self._find_and_register_dualsense():
             return False
 
-        sys.stdout.write("\n虚拟 Xbox 360 手柄已创建。DualSense 的输入将直接映射到虚拟手柄上。")
+        sys.stdout.write("\n>>> 虚拟 Xbox360 手柄已创建。DualSense 的输入将直接映射到虚拟手柄上。")
 
         # 重置（防止多次调用 start）
         self._stop_event.clear()
@@ -252,10 +270,7 @@ class DualSenseToX360Mapper:
                     self._map_to_x360()
                     time.sleep(self.poll_interval)
             except Exception as e:
-                sys.stdout.write(f"映射循环遇到异常：{e}")
-            finally:
-                # 确保退出时清理
-                self._cleanup()
+                sys.stdout.write(f">>> 映射循环遇到异常：{e}")
 
         self._mapping_thread = threading.Thread(target=run_loop, daemon=True)
         self._mapping_thread.start()
@@ -267,10 +282,8 @@ class DualSenseToX360Mapper:
         """
         self._stop_event.set()
         if self._mapping_thread:
-            self._mapping_thread.join(timeout=1.0)
-        else:
-            # 如果线程尚未启动，也执行清理
-            self._cleanup()
+            self._mapping_thread.join(timeout=0)
+        self._cleanup()
 
     def _cleanup(self):
         """
@@ -279,7 +292,7 @@ class DualSenseToX360Mapper:
         if self._hid_device:
             try:
                 self._hid_device.close()
-                sys.stdout.write("\nDualSense 设备已关闭。")
+                sys.stdout.write("\n>>> DualSense 设备已关闭。")
             except Exception:
                 pass
             finally:
@@ -289,6 +302,31 @@ class DualSenseToX360Mapper:
             try:
                 self.virtual_gamepad.reset()
                 self.virtual_gamepad.update()
-                sys.stdout.write("\n虚拟手柄已重置并关闭。")
+                if hasattr(self.virtual_gamepad, 'vigem_disconnect'):
+                    self.virtual_gamepad.vigem_disconnect()
+                sys.stdout.write("\n>>> 虚拟手柄已重置并关闭。")
             except Exception:
                 pass
+            finally:
+                self.virtual_gamepad = None
+
+
+if __name__ == "__main__":
+    # 创建 DualSense 映射器实例
+    mapper = DualSenseToX360Mapper(
+        vendor_id=0x054C,  # Sony
+        product_id=0x0DF2  # DualSense Edge
+    )
+    
+    try:
+        # 启动映射
+        if mapper.start():
+            print("按 Ctrl+C 停止程序...")
+            # 保持程序运行
+            while True:
+                time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n正在停止程序...")
+    finally:
+        # 确保正确清理资源
+        mapper.stop()
