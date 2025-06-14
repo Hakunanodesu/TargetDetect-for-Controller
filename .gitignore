@@ -9,7 +9,7 @@
 
 # 忽略项目文件
 user_config.json
-test.py
+test*
 build.bat
 gitpush.bat
 

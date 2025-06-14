@@ -1,7 +1,20 @@
 import ctypes
-from pywinusb import hid
 from pathlib import Path
+import os
+import json
+import traceback
+import subprocess
 
+
+def handle_exception(e):
+    sys.stdout.write(f"发生异常：{str(e)}")
+    sys.stdout.write(f"异常类型：{type(e).__name__}")
+    sys.stdout.write(f"完整堆栈信息：\n{traceback.format_exc()}\n")
+
+def list_subdirs(path):
+    # 列出 path 下的所有条目，并筛选出目录
+    return [name for name in os.listdir(path)
+            if os.path.isdir(os.path.join(path, name))]
 
 def find_model_files():
     """
@@ -17,7 +30,6 @@ def find_model_files():
             # 将绝对路径转换为相对于 cwd 的相对路径
             rel_path = path.relative_to(cwd)
             result.append(str(rel_path).replace('\\', '/'))
-
     return result
 
 def get_screenshot_region_dxcam(screenshot_size):
@@ -61,16 +73,21 @@ def enum_hid_devices():
     """
     device_set = set()
     # 创建一个 HID 设备筛选器，不指定任何 VID/PID，表示获取所有 HID 设备
-    all_devices = hid.HidDeviceFilter().get_devices()
-    for device in all_devices:
-        try:
-            vid = device.vendor_id
-            pid = device.product_id
-            path = device.device_path  # 唯一标识此设备的路径
-            device_set.add((vid, pid, path))
-        except Exception:
-            # 某些设备可能取不到 vendor_id/product_id，就跳过
-            continue
+    all_devices = subprocess.run(
+        [
+            "C:/Program Files/Nefarius Software Solutions/HidHide/x64/HidHideCLI.exe", 
+            "--dev-gaming"
+        ],
+        capture_output=True, text=True
+    )
+    for device in json.loads(all_devices.stdout):
+        name = device["friendlyName"]
+        for device_info in device["devices"]:
+            if device_info["present"] == True:
+                path = device_info["symbolicLink"]
+                vid = "0x" + path[path.find("vid_")+4:path.find("vid_")+8]
+                pid = "0x" + path[path.find("pid_")+4:path.find("pid_")+8]
+                device_set.add((name, vid, pid, path))
     return device_set
 
 def median_of_three(x, max, min): # 比min，max嵌套函数更快
@@ -81,3 +98,49 @@ def median_of_three(x, max, min): # 比min，max嵌套函数更快
     else:
         return x
     
+
+if __name__ == "__main__":
+    # path = "\\\\?\\hid#{00001812-0000-1000-8000-00805f9b34fb}&dev&vid_045e&pid_0b13&rev_0509&0c3526101353&ig_00#d&be35318&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"
+    # path = "HID\\" + "\\".join(path.split("#")[1:-1])
+    # subprocess.run(
+    #     [
+    #         "C:/Program Files/Nefarius Software Solutions/HidHide/x64/HidHideCLI.exe", 
+    #         "--dev-hide",
+    #         path
+    #     ],
+    #     capture_output=True, text=True
+    # )
+    # import re, time
+    # DEVICE_ID = path
+    # PS_CMD_DISABLE = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Disable-PnpDevice -Confirm:$false'
+    # PS_CMD_ENABLE  = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Enable-PnpDevice  -Confirm:$false'
+    # subprocess.run(
+    #     ["powershell", "-Command", PS_CMD_DISABLE],
+    #     check=True
+    # )
+    # while True:
+    #     result = subprocess.run(
+    #         ["powershell", "-Command",
+    #         f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
+    #         capture_output=True, text=True
+    #     )
+    #     status = result.stdout.strip()
+    #     if re.search(r"(Disabled|Error)", status, re.IGNORECASE):
+    #         break
+    #     time.sleep(0.5)
+    # # 启用（插入）
+    # subprocess.run(
+    #     ["powershell", "-Command", PS_CMD_ENABLE],
+    #     check=True
+    # )
+    # while True:
+    #     result = subprocess.run(
+    #         ["powershell", "-Command",
+    #         f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
+    #         capture_output=True, text=True
+    #     )
+    #     status = result.stdout.strip()
+    #     if re.search(r"(OK)", status, re.IGNORECASE):
+    #         break
+    #     time.sleep(0.5)
+    print(enum_hid_devices())

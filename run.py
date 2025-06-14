@@ -1,38 +1,58 @@
+# 在你的脚本最顶部（import 之前）
+import os
+import re
+import sys
 import json
 import time
-import sys
-import logging
-import traceback
-import os
 import threading
 import tkinter as tk
 from tkinter import scrolledtext
+import subprocess
 
 import numpy as np
 
 from modules.onnx import APV5Experimental
-from modules.controller import DualSenseToX360Mapper
-from modules.grab_screen import ScreenGrabber
-from modules.delay_stdout import DelayedStdoutRedirector
+from modules.controller import DualSenseToDS4Mapper, DualSenseToX360Mapper, XboxWirelessToX360Mapper
 from modules.initialize import InitApp
 from modules.aim_configurate import CFGApp
-from utils.tools import get_screenshot_region_dxcam
+from utils.grab_screen import ScreenGrabber
+from utils.delay_stdout import DelayedStdoutRedirector
+from utils.tools import get_screenshot_region_dxcam, list_subdirs, enum_hid_devices, handle_exception
 
 
 class App:
     def __init__(self, root):
         self.root = root
-        self.root.title("TGC v0.1.0")
+        self.root.title("TGC v1.1.0")
 
         self.running = False
         self.mapper_running = False
         self.logic_started = False  # 标记 run_logic 是否已成功启动
         self.thread = None
+        self.thread_clear_excl_running = False
         self.mapper = None
+
+        # 日志输出区
+        self.output = scrolledtext.ScrolledText(root, height=15, width=80, state='disabled')
+        self.output.pack(fill='both', expand=True)
+        sys.stdout = DelayedStdoutRedirector(self.output, interval_ms=50)
+    
+        self.check_resources()
+
+        if os.path.exists("user_config.json"):
+            with open("user_config.json", "r") as f:
+                instance_exist = any(
+                    device[2] == json.load(f)["controller"]["Instance_ID"] 
+                    for device in enum_hid_devices()
+                )
+            sys.stdout.write("\n>>> 检测到手柄实例变动，请重新初始化。")
+        else:
+            instance_exist = False
+            sys.stdout.write("\n>>> 未检测到用户配置，请先初始化。")
 
         # 按钮容器 Frame
         button_frame = tk.Frame(root)
-        button_frame.pack(pady=10)
+        button_frame.pack(pady=(10, 0))
 
         # InitApp control button
         self.init_button = tk.Button(button_frame, text="初始化配置", command=self.start_init)
@@ -42,7 +62,7 @@ class App:
         self.cfg_button = tk.Button(
             button_frame, 
             text="修改识别配置", 
-            state='normal' if os.path.exists("user_config.json") else 'disabled', 
+            state='normal' if instance_exist else 'disabled', 
             command=self.open_cfg
         )
         self.cfg_button.pack(side='left', padx=5)
@@ -51,7 +71,7 @@ class App:
         self.mapper_button = tk.Button(
             button_frame, 
             text="启动手柄映射", 
-            state='normal' if os.path.exists("user_config.json") else 'disabled', 
+            state='normal' if instance_exist else 'disabled', 
             command=self.toggle_mapper
         )
         self.mapper_button.pack(side='left', padx=5)
@@ -60,13 +80,50 @@ class App:
         self.button = tk.Button(button_frame, text="启动智慧核心", state='disabled', command=self.toggle)
         self.button.pack(side='left', padx=5)
 
-        self.output = scrolledtext.ScrolledText(root, height=15, width=80, state='disabled')
-        self.output.pack(fill='both', expand=True)
+        # 底部按钮和标签容器
+        bottom_frame = tk.Frame(root)
+        bottom_frame.pack(fill='x', pady=(5, 0))
+        # 延迟信息标签
+        latency_str = (
+            f"[Latency] full cycle: waiting...\n"
+            f"[Latency] screen grab: waiting...\n"
+            f"[Latency] inference: waiting..."
+        )
+        self.latency_label = tk.Label(root, text=latency_str, font=("Arial", 10), justify=tk.LEFT)
+        self.latency_label.pack(side="left", padx=10, pady=(0, 5))
+        # 清空手柄独占按钮
+        self.clear_excl_button = tk.Button(
+            root,
+            text="清空手柄独占",
+            state='normal' if instance_exist else 'disabled', 
+            command=lambda: self.toggle_exclusive(state="off")
+        )
+        self.clear_excl_button.pack(side='right', padx=20, pady=(0, 5))
 
-        self.latency_label = tk.Label(root, text="延迟信息：等待数据...", font=("Arial", 10), justify=tk.LEFT)
-        self.latency_label.pack(pady=5, anchor='w')
-
-        sys.stdout = DelayedStdoutRedirector(self.output, interval_ms=50)
+    def check_resources(self):
+        drivers = {
+            "ViGEm Bus Driver": "https://github.com/nefarius/ViGEmBus/releases/download/v1.22.0/ViGEmBus_1.22.0_x64_x86_arm64.exe",
+            "HidHide": "https://github.com/nefarius/HidHide/releases/download/v1.5.230.0/HidHide_1.5.230_x64.exe"
+        }
+        resources_dir = "C:/Program Files/Nefarius Software Solutions"
+        essential_drivers = list_subdirs(resources_dir)
+        owned_drivers = []
+        missing_drivers = []
+        if "ViGEm Bus Driver" in essential_drivers:
+            owned_drivers.append("ViGEm Bus Driver")
+        else:
+            missing_drivers.append("ViGEm Bus Driver")
+        if "HidHide" in essential_drivers:
+            owned_drivers.append("HidHide")
+        else:
+            missing_drivers.append("HidHide")
+        sys.stdout.write(f"\n>>> 已检测到 {'，'.join(owned_drivers)} 驱动。")
+        if missing_drivers != []:
+            sys.stdout.write(f"\n>>> 未检测到 {'，'.join(missing_drivers)} 驱动，正在跳转网页下载，请在下载完成后安装（下载慢请使用代理）。")
+            for driver in missing_drivers:
+                os.startfile(drivers[driver])
+        else:
+            sys.stdout.write("\n>>> 已就绪。")
 
     def update_latency_label(self, text):
         self.latency_label.config(text=text)
@@ -104,40 +161,56 @@ class App:
             sys.stdout.write("\n>>> 配置初始化完成。")
             self.mapper_button.config(state='normal')
             self.cfg_button.config(state='normal')
+            self.clear_excl_button.config(state='normal')
         except Exception as e:
             if 'init_root' in locals():
                 init_root.grab_release()  # 确保在发生异常时也释放焦点
             sys.stdout.write(f"\n>>> 初始化配置时出错: {e}")
 
     def toggle_mapper(self):
+        threading.Thread(target=self._wrap_toggle_mapper, daemon=True).start()
+
+    def _wrap_toggle_mapper(self):
         if not self.mapper_running:
             try:
                 with open("user_config.json", "r") as f:
                     config = json.load(f)
                 vendor_id = int(config["controller"]["Vendor_ID"], 16)
                 product_id = int(config["controller"]["Product_ID"], 16)
+                path = config["controller"]["Path"]
                 sys.stdout.write("\n>>> 正在启动手柄映射...")
-                self.mapper = DualSenseToX360Mapper(vendor_id=vendor_id, product_id=product_id, poll_interval=0.002)
+                self.toggle_exclusive("off")
+                while self.thread_clear_excl_running:
+                    time.sleep(0.5)
+                if vendor_id == 0x054c:
+                    self.mapper = DualSenseToDS4Mapper(product_id=product_id, path=path)
+                elif vendor_id == 0x045e:
+                    self.mapper = XboxWirelessToX360Mapper(product_id=product_id, path=path)
                 status = self.mapper.start()
                 if status:
                     self.mapper_running = True
                     self.mapper_button.config(text="停止手柄映射")
                     self.button.config(state='normal')
                     self.init_button.config(state='disabled')
+                    self.clear_excl_button.config(state='disabled')
                     sys.stdout.write("\n>>> 手柄映射已启动。")
                 else:
                     sys.stdout.write("\n>>> 手柄映射启动失败，请检查设备。")
             except Exception as e:
                 sys.stdout.write(f"\n>>> 启动映射时出错: {e}")
         else:
+            sys.stdout.write("\n>>> 正在停止手柄映射...")
             if self.mapper:
-                sys.stdout.write("\n>>> 正在停止手柄映射...")
                 self.mapper.stop()
             self.mapper_running = False
+            self.toggle_exclusive("off")
+            while self.thread_clear_excl_running:
+                time.sleep(0.5)
             sys.stdout.write("\n>>> 手柄映射已停止。")
             self.mapper_button.config(text="启动手柄映射")
             self.button.config(state='disabled')
             self.init_button.config(state='normal')
+            self.clear_excl_button.config(state='normal')
             if self.running:
                 self.toggle()
 
@@ -167,9 +240,8 @@ class App:
             self.logic_started = True
             self.run_logic()
         except Exception as e:
-            logging.error("智慧核心启动失败：%s", str(e))
-            logging.error("异常类型：%s", type(e).__name__)
-            logging.error("完整堆栈信息：\n%s", traceback.format_exc())
+            sys.stdout.write("\n>>> 智慧核心启动失败。")
+            handle_exception(e)
             self.running = False
             self.root.after(0, self._handle_logic_failure)
         finally:
@@ -179,7 +251,6 @@ class App:
         self.button.config(text="启动智慧核心")
         self.mapper_button.config(state='normal')
         self.cfg_button.config(state='normal')
-        sys.stdout.write("\n>>> 智慧核心启动失败，请检查配置。")
 
     def _check_logic_started(self):
         if not self.running:
@@ -277,13 +348,101 @@ class App:
                     last_print_time = now
 
             sys.stdout.write("\n>>> 智慧核心已关闭。")
-
         except Exception as e:
-            logging.error("发生异常：%s", str(e))
-            logging.error("异常类型：%s", type(e).__name__)
-            logging.error("完整堆栈信息：\n%s", traceback.format_exc())
+            sys.stdout.write(f"\n>>> 智慧核心运行时出错。")
+            handle_exception(e)
             self.running = False
             self.root.after(0, self.button.config, {"text": "启动智慧核心"})
+        finally:
+            camera.stop()
+        
+    def toggle_exclusive(self, state: str = "off"):
+        if state == "off":
+            msg = ["\n>>> 正在停止手柄独占，请勿退出...", "\n>>> 停止手柄独占时出错: "]
+        else:
+            msg = ["\n>>> 正在启动手柄独占，请勿退出...", "\n>>> 启动手柄独占时出错: "]
+        button_states = {
+            "init": self.init_button.cget("state"),
+            "cfg": self.cfg_button.cget("state"),
+            "mapper": self.mapper_button.cget("state"),
+            "button": self.button.cget("state"),
+            "clear_excl": self.clear_excl_button.cget("state")
+        }
+        try:
+            sys.stdout.write(msg[0])
+            self.clear_excl_button.config(state='disabled')
+            self.init_button.config(state='disabled')
+            self.mapper_button.config(state='disabled')
+            self.cfg_button.config(state='disabled')
+            self.button.config(state='disabled')
+            subprocess.run(
+                [
+                    "C:/Program Files/Nefarius Software Solutions/HidHide/x64/HidHideCLI.exe", 
+                    f"--cloak-{state}"
+                ]
+            )
+            with open("user_config.json", "r") as f:
+                config = json.load(f)
+            if not self.thread_clear_excl_running:
+                thread_clear_excl = threading.Thread(
+                    target=self.reenable_device, 
+                    args=(state, config["controller"]["Instance_ID"], button_states)
+                )
+                thread_clear_excl.start()
+                self.thread_clear_excl_running = True
+        except Exception as e:
+            self.thread_clear_excl_running = False
+            sys.stdout.write(f"{msg[1]}{e}")
+            self.clear_excl_button.config(state=button_states["clear_excl"])
+            self.init_button.config(state=button_states["init"])
+            self.mapper_button.config(state=button_states["mapper"])
+            self.cfg_button.config(state=button_states["cfg"])
+            self.button.config(state=button_states["button"])
+
+    def reenable_device(self, state: str = "off", path: str = None, button_states: dict = None):
+        DEVICE_ID = path
+        PS_CMD_DISABLE = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Disable-PnpDevice -Confirm:$false'
+        PS_CMD_ENABLE  = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Enable-PnpDevice  -Confirm:$false'
+        # 禁用（拔出）
+        subprocess.run(
+            ["powershell", "-Command", PS_CMD_DISABLE],
+            check=True
+        )
+        while True:
+            result = subprocess.run(
+                ["powershell", "-Command",
+                f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
+                capture_output=True, text=True
+            )
+            status = result.stdout.strip()
+            if re.search(r"(Disabled|Error)", status, re.IGNORECASE):
+                break
+            time.sleep(0.5)
+        # 启用（插入）
+        subprocess.run(
+            ["powershell", "-Command", PS_CMD_ENABLE],
+            check=True
+        )
+        while True:
+            result = subprocess.run(
+                ["powershell", "-Command",
+                f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
+                capture_output=True, text=True
+            )
+            status = result.stdout.strip()
+            if re.search(r"(OK)", status, re.IGNORECASE):
+                break
+            time.sleep(0.5)
+        self.thread_clear_excl_running = False
+        self.clear_excl_button.config(state=button_states["clear_excl"])
+        self.init_button.config(state=button_states["init"])
+        self.mapper_button.config(state=button_states["mapper"])
+        self.cfg_button.config(state=button_states["cfg"])
+        self.button.config(state=button_states["button"])
+        if state == "off":
+            sys.stdout.write("\n>>> 手柄独占已停止。")
+        else:
+            sys.stdout.write("\n>>> 手柄独占已启动。")
 
 
 if __name__ == "__main__":
