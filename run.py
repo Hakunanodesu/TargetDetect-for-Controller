@@ -41,11 +41,14 @@ class App:
 
         if os.path.exists("user_config.json"):
             with open("user_config.json", "r") as f:
-                instance_exist = any(
-                    device[2] == json.load(f)["controller"]["Instance_ID"] 
-                    for device in enum_hid_devices()
-                )
-            sys.stdout.write("\n>>> 检测到手柄实例变动，请重新初始化。")
+                path = json.load(f)["controller"]["Path"] 
+            instance_exist = False
+            for device in enum_hid_devices():
+                if device[3] == path:
+                    instance_exist = True
+                    break
+            if not instance_exist:
+                sys.stdout.write("\n>>> 检测到手柄实例变动，请重新初始化。")
         else:
             instance_exist = False
             sys.stdout.write("\n>>> 未检测到用户配置，请先初始化。")
