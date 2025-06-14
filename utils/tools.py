@@ -100,46 +100,4 @@ def median_of_three(x, max, min): # 比min，max嵌套函数更快
     
 
 if __name__ == "__main__":
-    path = "\\\\?\\hid#vid_054c&pid_0df2&mi_03#b&15d9a947&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}"
-    path = "HID\\" + "\\".join(path.split("#")[1:-1])
-    subprocess.run(
-        [
-            "C:/Program Files/Nefarius Software Solutions/HidHide/x64/HidHideCLI.exe", 
-            "--dev-hide",
-            path
-        ],
-        capture_output=True, text=True
-    )
-    import re, time
-    DEVICE_ID = path
-    PS_CMD_DISABLE = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Disable-PnpDevice -Confirm:$false'
-    PS_CMD_ENABLE  = f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Enable-PnpDevice  -Confirm:$false'
-    subprocess.run(
-        ["powershell", "-Command", PS_CMD_DISABLE],
-        check=True
-    )
-    while True:
-        result = subprocess.run(
-            ["powershell", "-Command",
-            f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
-            capture_output=True, text=True
-        )
-        status = result.stdout.strip()
-        if re.search(r"(Disabled|Error)", status, re.IGNORECASE):
-            break
-        time.sleep(0.5)
-    # 启用（插入）
-    subprocess.run(
-        ["powershell", "-Command", PS_CMD_ENABLE],
-        check=True
-    )
-    while True:
-        result = subprocess.run(
-            ["powershell", "-Command",
-            f'Get-PnpDevice -InstanceId "{DEVICE_ID}" | Select-Object -ExpandProperty Status'],
-            capture_output=True, text=True
-        )
-        status = result.stdout.strip()
-        if re.search(r"(OK)", status, re.IGNORECASE):
-            break
-        time.sleep(0.5)
+    pass
