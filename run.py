@@ -96,12 +96,12 @@ class App:
         bottom_frame = tk.Frame(root)
         bottom_frame.pack(fill='x', pady=(5, 0))
         # 延迟信息标签
-        latency_str = (
+        self.latency_str = (
             f"[Latency] full cycle: waiting...\n"
             f"[Latency] screen grab: waiting...\n"
             f"[Latency] inference: waiting..."
         )
-        self.latency_label = tk.Label(root, text=latency_str, font=("Arial", 10), justify=tk.LEFT)
+        self.latency_label = tk.Label(root, text=self.latency_str, font=("Arial", 10), justify=tk.LEFT)
         self.latency_label.pack(side="left", padx=10, pady=(0, 5))
         # 清空手柄独占按钮
         self.clear_excl_button = tk.Button(
@@ -191,7 +191,7 @@ class App:
                 product_id = int(config["controller"]["Product_ID"], 16)
                 path = config["controller"]["Path"]
                 sys.stdout.write("\n>>> 正在启动手柄映射...")
-                self.toggle_exclusive("on")
+                self.toggle_exclusive("off")
                 while self.thread_clear_excl_running:
                     time.sleep(0.5)
                 if vendor_id == 0x054c:
@@ -245,7 +245,7 @@ class App:
             self.button.config(text="启动智慧核心")
             self.mapper_button.config(state='normal')
             self.cfg_button.config(state='normal')
-            self.update_latency_label("延迟信息：等待数据...")
+            self.update_latency_label(self.latency_str)
 
     def _logic_wrapper(self):
         try:
@@ -306,7 +306,7 @@ class App:
             sys.stdout.write(f"\n>>> 智慧核心运行中，当前 EP：{model.provider}")
             last_print_time = time.time()
             
-            tracking_delay_start = 0
+            tracking_delay_start = time.perf_counter()
             while self.running:
                 cycle_start = time.perf_counter()
                 grab_start = time.perf_counter()
@@ -344,8 +344,9 @@ class App:
                     rx_offset = map_euclidean_distance * cos_angle
                     ry_offset = map_euclidean_distance * sin_angle
                     self.mapper.add_rx_ry_offset(rx_offset, ry_offset)
+                    if self.mapper.dual_sense_state["rt"] > 128:
+                        tracking_delay_start = time.perf_counter()
                 else:
-                    tracking_delay_start = time.perf_counter()
                     self.mapper.rx_override = None
                     self.mapper.ry_override = None
 
@@ -362,6 +363,8 @@ class App:
                     self.root.after(0, self.update_latency_label, latency_str)
                     last_print_time = now
 
+            self.mapper.rx_override = None
+            self.mapper.ry_override = None
             sys.stdout.write("\n>>> 智慧核心已关闭。")
         except Exception as e:
             sys.stdout.write(f"\n>>> 智慧核心运行时出错。")
