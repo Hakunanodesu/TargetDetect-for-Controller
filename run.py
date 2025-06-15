@@ -12,7 +12,7 @@ import subprocess
 import numpy as np
 
 from modules.onnx import APV5Experimental
-from modules.controller import DualSenseToDS4Mapper, DualSenseToX360Mapper, XboxWirelessToX360Mapper
+from modules.controller import DualSenseToDS4Mapper, DualSenseToX360Mapper
 from modules.initialize import InitApp
 from modules.aim_configurate import CFGApp
 from utils.grab_screen import ScreenGrabber
@@ -38,6 +38,15 @@ class App:
         sys.stdout = DelayedStdoutRedirector(self.output, interval_ms=50)
     
         self.check_resources()
+
+        MY_EXE = os.path.abspath(sys.executable)
+        subprocess.run(
+            [
+                "C:/Program Files/Nefarius Software Solutions/HidHide/x64/HidHideCLI.exe", 
+                "--app-reg", 
+                MY_EXE
+            ]
+        )
 
         if os.path.exists("user_config.json"):
             with open("user_config.json", "r") as f:
@@ -182,7 +191,7 @@ class App:
                 product_id = int(config["controller"]["Product_ID"], 16)
                 path = config["controller"]["Path"]
                 sys.stdout.write("\n>>> 正在启动手柄映射...")
-                self.toggle_exclusive("off")
+                self.toggle_exclusive("on")
                 while self.thread_clear_excl_running:
                     time.sleep(0.5)
                 if vendor_id == 0x054c:
@@ -296,7 +305,8 @@ class App:
 
             sys.stdout.write(f"\n>>> 智慧核心运行中，当前 EP：{model.provider}")
             last_print_time = time.time()
-
+            
+            tracking_delay_start = 0
             while self.running:
                 cycle_start = time.perf_counter()
                 grab_start = time.perf_counter()
@@ -312,8 +322,9 @@ class App:
                 infer_latency = (infer_end - infer_start) * 1000
 
                 if (
-                    result is not None and \
-                    self.mapper.dual_sense_state["rt"] > 128
+                    (result is not None \
+                    and self.mapper.dual_sense_state["rt"] > 128) \
+                    or time.perf_counter() - tracking_delay_start < 0.2
                 ):
                     xy_result = result - ident_center
                     distances = np.abs(xy_result[:, 0]) + np.abs(xy_result[:, 1])
@@ -334,6 +345,7 @@ class App:
                     ry_offset = map_euclidean_distance * sin_angle
                     self.mapper.add_rx_ry_offset(rx_offset, ry_offset)
                 else:
+                    tracking_delay_start = time.perf_counter()
                     self.mapper.rx_override = None
                     self.mapper.ry_override = None
 

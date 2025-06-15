@@ -4,12 +4,13 @@ import os
 import json
 import traceback
 import subprocess
+import sys
 
 
 def handle_exception(e):
     sys.stdout.write(f"发生异常：{str(e)}")
-    sys.stdout.write(f"异常类型：{type(e).__name__}")
-    sys.stdout.write(f"完整堆栈信息：\n{traceback.format_exc()}\n")
+    sys.stdout.write(f"\n异常类型：{type(e).__name__}")
+    sys.stdout.write(f"\n完整堆栈信息：\n{traceback.format_exc()}\n")
 
 def list_subdirs(path):
     # 列出 path 下的所有条目，并筛选出目录
@@ -100,4 +101,4 @@ def median_of_three(x, max, min): # 比min，max嵌套函数更快
     
 
 if __name__ == "__main__":
-    pass
+    print(enum_hid_devices())

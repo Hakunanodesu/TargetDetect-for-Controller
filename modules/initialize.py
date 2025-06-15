@@ -55,10 +55,10 @@ class InitApp:
     def _poll_controller(self):
         devices = enum_hid_devices()
         # 过滤出 Sony(0x054C) 和 Microsoft(0x045E) 设备
-        filtered = [(name, vid, pid, path) for (name, vid, pid, path) in devices if vid in ("0x054c", "0x045e")]
+        filtered = [(name, vid, pid, path) for (name, vid, pid, path) in devices if vid in ("0x054c")]
         self.filtered_devices = filtered
         if not filtered:
-            sys.stdout.write(">>> 未检测到索尼或微软手柄，请插入手柄后回车重试。")
+            sys.stdout.write(">>> 未检测到 DualSense 手柄，请插入手柄后回车重试。")
         else:
             sys.stdout.write(f">>> 检测到 {len(filtered)} 台手柄设备：")
             for i, (name, vid, pid, path) in enumerate(filtered):
