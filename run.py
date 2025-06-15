@@ -322,9 +322,9 @@ class App:
                 infer_latency = (infer_end - infer_start) * 1000
 
                 if (
-                    (result is not None \
-                    and self.mapper.dual_sense_state["rt"] > 128) \
-                    or time.perf_counter() - tracking_delay_start < 0.2
+                    result is not None \
+                    and (self.mapper.dual_sense_state["rt"] > 128 \
+                    or time.perf_counter() - tracking_delay_start < 0.2)
                 ):
                     xy_result = result - ident_center
                     distances = np.abs(xy_result[:, 0]) + np.abs(xy_result[:, 1])
@@ -367,7 +367,7 @@ class App:
             sys.stdout.write(f"\n>>> 智慧核心运行时出错。")
             handle_exception(e)
             self.running = False
-            self.root.after(0, self.button.config, {"text": "启动智慧核心"})
+            self.handle_logic_failure()
         finally:
             camera.stop()
         
